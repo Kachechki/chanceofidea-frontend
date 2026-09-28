@@ -3,6 +3,8 @@ import Header from '~/widgets/Header.vue'
 import { Button } from '~/widgets/ui/button'
 import { FileBox } from '@lucide/vue'
 import { Info } from '@lucide/vue'
+import { Upload } from '@lucide/vue'
+import { Sprout } from '@lucide/vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import LandingCard from '~/widgets/LandingCard.vue'
 </script>
@@ -65,6 +67,54 @@ import LandingCard from '~/widgets/LandingCard.vue'
 				</div>
 			</CardContent>
 		</Card>
+	</div>
+	<div class="max-w-7xl mx-auto px-8 py-12 flex gap-8 justify-between">
+		<div class="flex-1">
+			<div class="flex justify-between">
+				<div>
+					<h2 class="text-lg font-semibold text-foreground">For authors</h2>
+					<p class="text-muted-foreground">
+						Pass your project to someone who will finish it and credit it work.
+					</p>
+				</div>
+				<div class="bg-primary rounded-full p-4">
+					<Upload style="color: var(--foreground) !important" />
+				</div>
+			</div>
+			<ul class="flex flex-col gap-6 mt-8">
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">1</span>
+					<div>
+						<h3 class="font-semibold text-foreground">
+							Create a project listing
+						</h3>
+						<p class="text-muted-foreground text-sm">
+							Add repo, notes, goals, and a clear adoption checklist.
+						</p>
+					</div>
+				</li>
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">2</span>
+					<div>
+						<h3 class="font-semibold text-foreground">
+							Set licensing & expectations
+						</h3>
+						<p class="text-muted-foreground text-sm">
+							Choose a license and what support you can offer the adopter.
+						</p>
+					</div>
+				</li>
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">3</span>
+					<div>
+						<h3 class="font-semibold text-foreground">Approve adopters</h3>
+						<p class="text-muted-foreground text-sm">
+							Review candidates or let the ocmmunity pick the best fit.
+						</p>
+					</div>
+				</li>
+			</ul>
+		</div>
 	</div>
 	<div>
 		<LandingCard />
