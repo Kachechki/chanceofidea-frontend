@@ -10,6 +10,7 @@ import LandingCard from '~/widgets/LandingCard.vue'
 </script>
 <template>
 	<Header />
+	<!-- hero -->
 	<section class="relative overflow-hidden">
 		<div
 			class="max-w-7xl mx-auto px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
@@ -52,6 +53,7 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			</div>
 		</div>
 	</section>
+	<!-- faq(?) -->
 	<div class="max-w-7xl mx-auto px-8 py-12 flex flex-col gap-8">
 		<Card class="border-primary/20 bg-primary/5">
 			<CardContent class="flex items-start gap-4 py-2">
@@ -68,6 +70,7 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			</CardContent>
 		</Card>
 	</div>
+	<!-- how it works -->
 	<div class="max-w-7xl mx-auto px-8 py-12 flex gap-8 justify-between">
 		<div class="flex-1">
 			<div class="flex justify-between">
