@@ -77,7 +77,9 @@ import LandingCard from '~/widgets/LandingCard.vue'
 						Pass your project to someone who will finish it and credit it work.
 					</p>
 				</div>
-				<div class="bg-primary rounded-full p-4">
+				<div
+					class="bg-primary rounded-full w-16 h-16 shrink-0 flex items-center justify-center"
+				>
 					<Upload style="color: var(--foreground) !important" />
 				</div>
 			</div>
@@ -110,6 +112,51 @@ import LandingCard from '~/widgets/LandingCard.vue'
 						<h3 class="font-semibold text-foreground">Approve adopters</h3>
 						<p class="text-muted-foreground text-sm">
 							Review candidates or let the ocmmunity pick the best fit.
+						</p>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="flex-1">
+			<div class="flex justify-between">
+				<div>
+					<h2 class="text-lg font-semibold text-foreground">For adopters</h2>
+					<p class="text-muted-foreground">
+						Find an interesting codebase and continue the work with clear
+						handoff notes.
+					</p>
+				</div>
+				<div
+					class="bg-primary rounded-full w-16 h-16 shrink-0 flex items-center justify-center"
+				>
+					<Sprout style="color: var(--foreground) !important" />
+				</div>
+			</div>
+			<ul class="flex flex-col gap-6 mt-8">
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">1</span>
+					<div>
+						<h3 class="font-semibold text-foreground">Browse and filter</h3>
+						<p class="text-muted-foreground text-sm">
+							Search by tech stack, completeness, or project size.
+						</p>
+					</div>
+				</li>
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">2</span>
+					<div>
+						<h3 class="font-semibold text-foreground">Request adoption</h3>
+						<p class="text-muted-foreground text-sm">
+							Send a message and propose a plan to continue the project.
+						</p>
+					</div>
+				</li>
+				<li class="flex gap-6">
+					<span class="text-xl font-bold font-mono text-primary">3</span>
+					<div>
+						<h3 class="font-semibold text-foreground">Complete & credit</h3>
+						<p class="text-muted-foreground text-sm">
+							Finish features, update docs, and credit the original author.
 						</p>
 					</div>
 				</li>
