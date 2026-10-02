@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Header from "~/widgets/Header.vue";
 import {Button} from "~/widgets/ui/button";
-import { FileBox } from '@lucide/vue';
+import {Clock, FileBox, HeartHandshake, Package, Users} from '@lucide/vue';
 import { Info } from '@lucide/vue';
 import {Card, CardContent} from "~/widgets/ui/card";
 import LandingCard from "~/widgets/LandingCard.vue";
@@ -48,7 +48,10 @@ import LandingCard from "~/widgets/LandingCard.vue";
       </CardContent>
     </Card>
   </div>
-  <div>
-    <LandingCard />
+  <div class="grid grid-rows-1 gap-6 grid-cols-4 gap-8 m-8">
+    <LandingCard  :count="3842" description="Total projects" :icon="Package"  />
+    <LandingCard  :count="1255" description="Adopted projects" :icon="HeartHandshake"  />
+    <LandingCard  :count="4980" description="Active developers" :icon="Users "  />
+    <LandingCard  :count="12430" description="Hours saved" :icon="Clock "  />
   </div>
 </template>
