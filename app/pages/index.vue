@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import Header from "~/widgets/Header.vue";
-import {Button} from "~/widgets/ui/button";
-import {Clock, FileBox, HeartHandshake, Package, Users} from '@lucide/vue';
-import { Info } from '@lucide/vue';
-import {Card, CardContent} from "~/widgets/ui/card";
-import LandingCard from "~/widgets/LandingCard.vue";
+import { Clock, FileBox, HeartHandshake, Package, Users } from '@lucide/vue'
 import Header from '~/widgets/Header.vue'
 import { Button } from '~/widgets/ui/button'
-import { FileBox } from '@lucide/vue'
 import { Info } from '@lucide/vue'
 import { Upload } from '@lucide/vue'
 import { Sprout } from '@lucide/vue'
@@ -59,13 +53,29 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			</div>
 		</div>
 	</section>
-  <!-- cards -->
-  <div class="grid grid-rows-1 gap-6 grid-cols-4 gap-8 m-8">
-    <LandingCard  :count="3842" description="Total projects" :icon="Package"  />
-    <LandingCard  :count="1255" description="Adopted projects" :icon="HeartHandshake"  />
-    <LandingCard  :count="4980" description="Active developers" :icon="Users "  />
-    <LandingCard  :count="12430" description="Hours saved" :icon="Clock "  />
-  </div>
+	<!-- cards -->
+	<div class="grid grid-rows-1 gap-6 grid-cols-4 gap-8 m-8">
+		<LandingCard
+			:count="3842"
+			description="Total projects"
+			:icon="Package"
+		/>
+		<LandingCard
+			:count="1255"
+			description="Adopted projects"
+			:icon="HeartHandshake"
+		/>
+		<LandingCard
+			:count="4980"
+			description="Active developers"
+			:icon="Users"
+		/>
+		<LandingCard
+			:count="12430"
+			description="Hours saved"
+			:icon="Clock"
+		/>
+	</div>
 	<!-- faq(?) -->
 	<section class="max-w-7xl mx-auto px-8 py-12 flex flex-col gap-8">
 		<Card class="border-primary/20 bg-primary/5">
