@@ -1,48 +1,6 @@
-<script setup lang="ts">
-import { Bookmark, ExternalLink } from '@lucide/vue'
-import { Card, CardContent } from '~/widgets/ui/card'
-import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
-
-interface Props {
-	project: ProjectEntity
-	bannerClass?: string // Optional top banner styling for featured cards (like the 4th Figma variant)
-	isBookmarked?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-	bannerClass: '',
-	isBookmarked: false,
-})
-
-defineEmits<{
-	(e: 'bookmark', project: ProjectEntity): void
-	(e: 'external', project: ProjectEntity): void
-}>()
-
-// Map TypeORM status enum to Tailwind background colors for the status dot
-const getStatusColor = (status: ProjectStatusEnum | string) => {
-	switch (status) {
-		case ProjectStatusEnum.DRAFT:
-		case 'DRAFT':
-			return 'bg-gray-500'
-		case ProjectStatusEnum.PUBLISHED:
-		case 'PUBLISHED':
-			return 'bg-emerald-500'
-		case ProjectStatusEnum.TRANSFERRING:
-		case 'TRANSFERRING':
-			return 'bg-amber-400'
-		case ProjectStatusEnum.ADOPTED:
-		case 'ADOPTED':
-			return 'bg-blue-500'
-		default:
-			return 'bg-emerald-500'
-	}
-}
-</script>
-
 <template>
 	<Card
-		class="relative overflow-hidden bg-card border-muted-foreground/30 rounded-2xl transition-all hover:border-muted-foreground/60"
+		class="relative overflow-hidden bg-card border-muted-foreground/30 rounded-2xl transition-all hover:border-muted-foreground/60 p-0"
 	>
 		<!-- Optional Top Header Banner (for featured cards) -->
 		<div
@@ -61,7 +19,7 @@ const getStatusColor = (status: ProjectStatusEnum | string) => {
 				<div
 					v-if="project.status"
 					:class="[
-						'w-3.5 h-3.5 rounded-full shrink-0 mt-1.5',
+						'w-4 h-4 rounded-full shrink-0 mt-1.5',
 						getStatusColor(project.status),
 					]"
 					:title="`Status: ${project.status}`"
@@ -80,7 +38,7 @@ const getStatusColor = (status: ProjectStatusEnum | string) => {
 					<span
 						v-for="tag in project.tags"
 						:key="tag.id || tag"
-						class="px-2.5 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded-md"
+						class="px-2.5 py-1 text-xs font-medium bg-accent text-secondary-foreground rounded-md"
 					>
 						{{
 							typeof tag === 'object' && tag !== null ? (tag as any).name : tag
@@ -127,3 +85,44 @@ const getStatusColor = (status: ProjectStatusEnum | string) => {
 		</CardContent>
 	</Card>
 </template>
+<script setup lang="ts">
+import { Bookmark, ExternalLink } from '@lucide/vue'
+import { Card, CardContent } from '~/widgets/ui/card'
+import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
+
+interface Props {
+	project: ProjectEntity
+	bannerClass?: string // Optional top banner styling for featured cards (like the 4th Figma variant)
+	isBookmarked?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+	bannerClass: '',
+	isBookmarked: false,
+})
+
+defineEmits<{
+	(e: 'bookmark', project: ProjectEntity): void
+	(e: 'external', project: ProjectEntity): void
+}>()
+
+// Map TypeORM status enum to Tailwind background colors for the status dot
+const getStatusColor = (status: ProjectStatusEnum | string) => {
+	switch (status) {
+		case ProjectStatusEnum.DRAFT:
+		case 'DRAFT':
+			return 'bg-gray-500'
+		case ProjectStatusEnum.PUBLISHED:
+		case 'PUBLISHED':
+			return 'bg-emerald-500'
+		case ProjectStatusEnum.TRANSFERRING:
+		case 'TRANSFERRING':
+			return 'bg-amber-400'
+		case ProjectStatusEnum.ADOPTED:
+		case 'ADOPTED':
+			return 'bg-blue-500'
+		default:
+			return 'bg-emerald-500'
+	}
+}
+</script>
