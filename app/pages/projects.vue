@@ -1,5 +1,16 @@
 <template>
-	<div class="w-full flex justify-center items-center p-8">
+	<div class="w-full flex flex-col gap-8 justify-center items-center p-8">
+		<div class="w-full max-w-96">
+			<div class="flex gap-2 items-center">
+				<Search class="text-muted-foreground!" />
+				<Input
+					v-model="searchQuery"
+					placeholder="Search projects..."
+					class="border-muted-foreground/30!"
+					size="lg"
+				></Input>
+			</div>
+		</div>
 		<div class="grid grid-cols-3 gap-4">
 			<ProjectCard
 				v-for="project in projects"
@@ -9,8 +20,11 @@
 	</div>
 </template>
 <script setup lang="ts">
+import { Input } from '~/components/ui/input'
 import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
+import { Search } from '@lucide/vue'
 
+const searchQuery = ref('')
 const projects = ref<ProjectEntity[]>([
 	{
 		id: 'uuid-proj-001',
