@@ -13,7 +13,7 @@
 		</div>
 		<div class="grid grid-cols-3 gap-4">
 			<ProjectCard
-				v-for="project in projects"
+				v-for="project in filteredProjects"
 				:project="project"
 			/>
 		</div>
@@ -208,5 +208,22 @@ const projects = ref<ProjectEntity[]>([
 		],
 	},
 ])
+
+// TODO: add debounce/rate-limiting so the db wont be spammed with requests for every character
+const filteredProjects = computed(() => {
+	if (!searchQuery.value.trim()) return projects.value
+
+	const query = searchQuery.value.toLowerCase().trim()
+
+	return projects.value.filter((project) => {
+		const matchesTitle = project.title.toLowerCase().includes(query)
+		const matchesDescription = project.description.toLowerCase().includes(query)
+		const matchesTags = project.tags.some((tag) =>
+			tag.name.toLowerCase().includes(query)
+		)
+
+		return matchesTitle || matchesDescription || matchesTags
+	})
+})
 </script>
 <style scoped lang="css"></style>
