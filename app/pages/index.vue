@@ -9,7 +9,6 @@ import { Card, CardContent } from '~/widgets/ui/card'
 import LandingCard from '~/widgets/LandingCard.vue'
 </script>
 <template>
-	<Header />
 	<!-- hero -->
 	<section class="relative overflow-hidden">
 		<div
