@@ -14,15 +14,15 @@ const selectedSort = ref((route.query.sort as string) || 'newest')
 
 const categories = [
   { id: 'all', label: 'All Projects' },
-  { id: 'Developer Tools', label: 'Developer Tools' },
-  { id: 'Web Development', label: 'Web Development' },
-  { id: 'Networking', label: 'Networking' },
-  { id: 'Embedded Systems', label: 'Embedded Systems' },
-  { id: 'Gaming', label: 'Gaming' },
-  { id: 'Databases', label: 'Databases' },
+  { id: 'SaaS', label: 'SaaS' },
+  { id: 'Mobile Apps', label: 'Mobile Apps' },
+  { id: 'AI/ML', label: 'AI/ML' },
+  { id: 'Open Source Tool', label: 'Open Source Tool' },
+  { id: 'GameDev', label: 'GameDev' },
+  { id: 'Browser Extensions', label: 'Browser Extensions' },
+  { id: 'Hardware/IoT', label: 'Hardware/IoT' },
 ]
 
-const searchQuery = ref('')
 const projects = ref<ProjectEntity[]>([
     {
         id: 'uuid-proj-001',
@@ -34,8 +34,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/ai-code-reviewer/bot',
         createdAt: new Date('2026-01-15T10:00:00Z'),
         owner: {} as any,
-        category: { id: 'cat-1', name: 'Developer Tools' } as any,
-        tags: [{ id: 'tag-1', name: 'ai' }, { id: 'tag-2', name: 'backend' }],
+        category: { id: 'cat-1', name: 'AI/ML' } as any,
+        tags: [{ id: 'tag-1', name: 'ai', slug: 'ai' }, { id: 'tag-2', name: 'backend', slug: 'backend' }],
     },
     {
         id: 'uuid-proj-002',
@@ -47,8 +47,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/nuxt-contrib/seo-toolkit',
         createdAt: new Date('2026-02-10T14:30:00Z'),
         owner: {} as any,
-        category: { id: 'cat-2', name: 'Web Development' } as any,
-        tags: [{ id: 'tag-5', name: 'vue' }, { id: 'tag-6', name: 'frontend' }],
+        category: { id: 'cat-2', name: 'Open Source Tool' } as any,
+        tags: [{ id: 'tag-5', name: 'vue', slug: 'vue' }, { id: 'tag-6', name: 'frontend', slug: 'frontend' }],
     },
     {
         id: 'uuid-proj-003',
@@ -60,8 +60,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/cyber/packet-sniffer',
         createdAt: new Date('2025-11-05T09:15:00Z'),
         owner: {} as any,
-        category: { id: 'cat-3', name: 'Networking' } as any,
-        tags: [{ id: 'tag-3', name: 'cybersec' }, { id: 'tag-7', name: 'systems' }],
+        category: { id: 'cat-3', name: 'Open Source Tool' } as any,
+        tags: [{ id: 'tag-3', name: 'cybersec', slug: 'cybersec' }, { id: 'tag-7', name: 'systems', slug: 'systems' }],
     },
     {
         id: 'uuid-proj-004',
@@ -73,8 +73,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/retro/walkman-firmware',
         createdAt: new Date('2026-03-01T18:45:00Z'),
         owner: {} as any,
-        category: { id: 'cat-4', name: 'Embedded Systems' } as any,
-        tags: [{ id: 'tag-9', name: 'hardware' }, { id: 'tag-10', name: 'c' }],
+        category: { id: 'cat-4', name: 'Hardware/IoT' } as any,
+        tags: [{ id: 'tag-9', name: 'hardware', slug: 'hardware' }, { id: 'tag-10', name: 'c', slug: 'c' }],
     },
     {
         id: 'uuid-proj-005',
@@ -86,8 +86,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/logistics/factory-planner',
         createdAt: new Date('2026-03-20T11:20:00Z'),
         owner: {} as any,
-        category: { id: 'cat-5', name: 'Gaming' } as any,
-        tags: [{ id: 'tag-5', name: 'vue' }, { id: 'tag-11', name: 'simulation' }],
+        category: { id: 'cat-5', name: 'GameDev' } as any,
+        tags: [{ id: 'tag-5', name: 'vue', slug: 'vue' }, { id: 'tag-11', name: 'simulation', slug: 'simulation' }],
     },
     {
         id: 'uuid-proj-006',
@@ -99,8 +99,8 @@ const projects = ref<ProjectEntity[]>([
         repostoryUrl: 'https://github.com/db/postgres-shard-router',
         createdAt: new Date('2026-01-28T16:00:00Z'),
         owner: {} as any,
-        category: { id: 'cat-6', name: 'Databases' } as any,
-        tags: [{ id: 'tag-2', name: 'backend' }, { id: 'tag-14', name: 'typescript' }],
+        category: { id: 'cat-6', name: 'SaaS' } as any,
+        tags: [{ id: 'tag-2', name: 'backend', slug: 'backend' }, { id: 'tag-14', name: 'typescript', slug: 'typescript' }],
     },
 ])
 
@@ -129,7 +129,6 @@ const filteredProjects = computed(() => {
     )
   }
 
-
   if (selectedCategory.value !== 'all') {
     result = result.filter(p => p.category?.name === selectedCategory.value)
   }
@@ -139,7 +138,6 @@ const filteredProjects = computed(() => {
   } else if (selectedSort.value === 'newest') {
     result = [...result].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   } else if (selectedSort.value === 'most applications') {
-    // Задел под сортировку по количеству заявок
     result = [...result].sort((a, b) => (b.repositoryId || 0) - (a.repositoryId || 0))
   }
 
@@ -155,7 +153,6 @@ const clearFilters = () => {
 
 <template>
   <div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
- 
     <div class="flex flex-col gap-2">
       <h1 class="text-3xl font-bold text-foreground">Project Catalog</h1>
       <p class="text-muted-foreground text-sm">
@@ -164,7 +161,6 @@ const clearFilters = () => {
     </div>
 
     <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border">
- 
       <div class="relative w-full md:w-96">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input 
@@ -185,7 +181,6 @@ const clearFilters = () => {
           <option value="most applications">Sort: Most Applications</option>
         </select>
       </div>
-
     </div>
 
     <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -204,7 +199,6 @@ const clearFilters = () => {
     </div>
 
     <div class="min-h-[400px]">
-
       <div v-if="filteredProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <ProjectCard 
           v-for="project in filteredProjects" 
@@ -227,8 +221,6 @@ const clearFilters = () => {
           <RotateCcw class="w-4 h-4" /> Clear filters
         </Button>
       </div>
-
     </div>
-
   </div>
 </template>
