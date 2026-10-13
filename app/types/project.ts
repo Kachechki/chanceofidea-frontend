@@ -1,13 +1,12 @@
+import type { UserEntity } from './user'
+import type { CategoryEntity } from './category'
+import type { TagEntity } from './tag'
+
 export enum ProjectStatusEnum {
 	DRAFT = 'DRAFT',
 	PUBLISHED = 'PUBLISHED',
 	TRANSFERRING = 'TRANSFERRING',
 	ADOPTED = 'ADOPTED',
-}
-
-export interface Tag {
-	id: string
-	name: string
 }
 
 export interface ProjectEntity {
@@ -17,9 +16,9 @@ export interface ProjectEntity {
 	readiness?: number
 	description: string
 	repositoryId: number
-	repostoryUrl: string
+	repostoryUrl: string // Matches backend spelling
 	createdAt: string | Date
-	owner?: any // or a User interface
-	category?: any // or a Category interface
-	tags: Tag[]
+	owner?: UserEntity
+	category?: CategoryEntity
+	tags: TagEntity[]
 }

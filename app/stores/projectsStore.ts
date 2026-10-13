@@ -1,8 +1,4 @@
-import {
-	type ProjectEntity,
-	ProjectStatusEnum,
-	type Tag,
-} from '~/types/project'
+import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
 import { defineStore } from 'pinia'
 
 export const useProjectsStore = defineStore('projects', {
@@ -21,7 +17,7 @@ export const useProjectsStore = defineStore('projects', {
 				const matchesDescription = project.description
 					.toLowerCase()
 					.includes(query)
-				const matchesTags = project.tags.some((tag: Tag) =>
+				const matchesTags = project.tags.some((tag) =>
 					tag.name.toLowerCase().includes(query)
 				)
 
