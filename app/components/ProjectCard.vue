@@ -23,7 +23,8 @@
 						getStatusColor(project.status),
 					]"
 					:title="`Status: ${project.status}`"
-				/>
+				>
+				</div>
 			</div>
 
 			<!-- Description -->

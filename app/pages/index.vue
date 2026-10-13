@@ -8,8 +8,8 @@ import { Sprout } from '@lucide/vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import LandingCard from '~/widgets/LandingCard.vue'
 </script>
+
 <template>
-	<!-- hero -->
 	<section class="relative overflow-hidden">
 		<div
 			class="max-w-7xl mx-auto px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
@@ -23,14 +23,11 @@ import LandingCard from '~/widgets/LandingCard.vue'
 					abandoned or unfinished projects with adopters ready to continue the
 					work — preserving ideas and saving development time.
 				</span>
+				
+				
 				<div class="flex items-center gap-4 mt-2">
-					<Button
-						size="lg"
-						class="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-					>
-						<FileBox class="w-5 h-5" />
-						Publish project
-					</Button>
+					<GithubLoginButton />
+					
 					<Button
 						size="lg"
 						variant="outline"
@@ -52,7 +49,6 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			</div>
 		</div>
 	</section>
-	<!-- cards -->
 	<div class="grid grid-rows-1 gap-6 grid-cols-4 gap-8 m-8">
 		<LandingCard
 			:count="3842"
@@ -75,7 +71,6 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			:icon="Clock"
 		/>
 	</div>
-	<!-- faq(?) -->
 	<section class="max-w-7xl mx-auto px-8 py-12 flex flex-col gap-8">
 		<Card class="border-primary/20 bg-primary/5">
 			<CardContent class="flex items-start gap-4 py-2">
@@ -92,7 +87,6 @@ import LandingCard from '~/widgets/LandingCard.vue'
 			</CardContent>
 		</Card>
 	</section>
-	<!-- how it works -->
 	<section class="max-w-7xl mx-auto px-8 py-12 flex gap-8 justify-between">
 		<div class="flex-1">
 			<div class="flex justify-between">
