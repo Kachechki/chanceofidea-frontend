@@ -22,6 +22,7 @@ const categories = [
   { id: 'Databases', label: 'Databases' },
 ]
 
+const searchQuery = ref('')
 const projects = ref<ProjectEntity[]>([
     {
         id: 'uuid-proj-001',

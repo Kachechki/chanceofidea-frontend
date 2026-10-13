@@ -17,7 +17,7 @@ import { Lightbulb } from '@lucide/vue'
 				@click="navigateTo('/')"
 			>
 				<h1 class="text-lg font-bold text-foreground whitespace-nowrap m-0">
-					Second Chance Archive
+					Chance of Idea
 				</h1>
 			</button>
 			<!--<span class="text-sm text-muted-foreground whitespace-nowrap pl-2 border-l border-border"></span>-->
