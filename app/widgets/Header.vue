@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Button } from '~/widgets/ui/button'
 import { Lightbulb } from '@lucide/vue'
+
+const { user, logout } = useAuth()
 </script>
 
 <template>
@@ -36,12 +38,26 @@ import { Lightbulb } from '@lucide/vue'
 			<Button class="bg-primary text-primary-foreground hover:bg-primary/90"
 				>Publish Project</Button
 			>
+			<template v-if="user">
+				<img
+					:src="user.avatarUrl"
+					:alt="user.login"
+					class="w-8 h-8 rounded-full border border-border object-cover"
+				/>
+				<Button
+					variant="outline"
+					class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
+					@click="logout"
+					>Log out</Button
+				>
+			</template>
 			<Button
+				v-else
 				variant="outline"
 				class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
+				@click="navigateTo('/login')"
 				>Log in</Button
 			>
-			<!--    <Avatar /> -->
 		</div>
 	</header>
 </template>

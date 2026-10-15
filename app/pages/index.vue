@@ -26,7 +26,13 @@ import LandingCard from '~/widgets/LandingCard.vue'
 				
 				
 				<div class="flex items-center gap-4 mt-2">
-					<GithubLoginButton />
+					<Button
+						size="lg"
+						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+						@click="navigateTo('/login')"
+					>
+						Log in
+					</Button>
 					
 					<Button
 						size="lg"
