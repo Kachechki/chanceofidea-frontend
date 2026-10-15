@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Search, RotateCcw, Package } from '@lucide/vue'
+import { Search, RotateCcw, Package, Tag } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 
@@ -9,18 +9,27 @@ const route = useRoute()
 const router = useRouter()
 
 const searchQuery = ref((route.query.q as string) || '')
-const selectedCategory = ref((route.query.category as string) || 'all')
+const selectedTag = ref((route.query.tag as string) || 'all')
 const selectedSort = ref((route.query.sort as string) || 'newest')
 
 const categories = [
-  { id: 'all', label: 'All Projects' },
-  { id: 'SaaS', label: 'SaaS' },
-  { id: 'Mobile Apps', label: 'Mobile Apps' },
-  { id: 'AI/ML', label: 'AI/ML' },
-  { id: 'Open Source Tool', label: 'Open Source Tool' },
-  { id: 'GameDev', label: 'GameDev' },
-  { id: 'Browser Extensions', label: 'Browser Extensions' },
-  { id: 'Hardware/IoT', label: 'Hardware/IoT' },
+  { id: 'all', label: 'All Categories' },
+  { id: 'python', label: 'Python' },
+  { id: 'java', label: 'Java' },
+  { id: 'frontend', label: 'Frontend' },
+  { id: 'backend', label: 'Backend' },
+  { id: 'cybersecurity', label: 'Cybersecurity' },
+  { id: 'tg bot', label: 'TG Bot' },
+  { id: 'rust', label: 'Rust' },
+  { id: 'go', label: 'Go' },
+  { id: 'vue.js', label: 'Vue.js' },
+  { id: 'node.js', label: 'Node.js' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'react', label: 'React' },
+  { id: 'docker', label: 'Docker' },
+  { id: 'ai', label: 'AI' },
+  { id: 'c', label: 'C' },
+  { id: 'other', label: 'Other' },
 ]
 
 const projects = ref<ProjectEntity[]>([
@@ -35,7 +44,7 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2026-01-15T10:00:00Z'),
         owner: {} as any,
         category: { id: 'cat-1', name: 'AI/ML' } as any,
-        tags: [{ id: 'tag-1', name: 'ai', slug: 'ai' }, { id: 'tag-2', name: 'backend', slug: 'backend' }],
+        tags: [{ id: 'tag-1', name: 'ai', slug: 'ai' }, { id: 'tag-2', name: 'backend', slug: 'backend' }, { id: 'tag-3', name: 'python', slug: 'python' }],
     },
     {
         id: 'uuid-proj-002',
@@ -48,7 +57,7 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2026-02-10T14:30:00Z'),
         owner: {} as any,
         category: { id: 'cat-2', name: 'Open Source Tool' } as any,
-        tags: [{ id: 'tag-5', name: 'vue', slug: 'vue' }, { id: 'tag-6', name: 'frontend', slug: 'frontend' }],
+        tags: [{ id: 'tag-5', name: 'vue.js', slug: 'vue.js' }, { id: 'tag-6', name: 'frontend', slug: 'frontend' }, { id: 'tag-7', name: 'typescript', slug: 'typescript' }],
     },
     {
         id: 'uuid-proj-003',
@@ -61,7 +70,7 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2025-11-05T09:15:00Z'),
         owner: {} as any,
         category: { id: 'cat-3', name: 'Open Source Tool' } as any,
-        tags: [{ id: 'tag-3', name: 'cybersec', slug: 'cybersec' }, { id: 'tag-7', name: 'systems', slug: 'systems' }],
+        tags: [{ id: 'tag-8', name: 'cybersecurity', slug: 'cybersecurity' }, { id: 'tag-9', name: 'c', slug: 'c' }, { id: 'tag-10', name: 'backend', slug: 'backend' }],
     },
     {
         id: 'uuid-proj-004',
@@ -74,7 +83,7 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2026-03-01T18:45:00Z'),
         owner: {} as any,
         category: { id: 'cat-4', name: 'Hardware/IoT' } as any,
-        tags: [{ id: 'tag-9', name: 'hardware', slug: 'hardware' }, { id: 'tag-10', name: 'c', slug: 'c' }],
+        tags: [{ id: 'tag-11', name: 'rust', slug: 'rust' }, { id: 'tag-12', name: 'hardware', slug: 'hardware' }],
     },
     {
         id: 'uuid-proj-005',
@@ -87,7 +96,7 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2026-03-20T11:20:00Z'),
         owner: {} as any,
         category: { id: 'cat-5', name: 'GameDev' } as any,
-        tags: [{ id: 'tag-5', name: 'vue', slug: 'vue' }, { id: 'tag-11', name: 'simulation', slug: 'simulation' }],
+        tags: [{ id: 'tag-13', name: 'java', slug: 'java' }, { id: 'tag-14', name: 'other', slug: 'other' }],
     },
     {
         id: 'uuid-proj-006',
@@ -100,18 +109,18 @@ const projects = ref<ProjectEntity[]>([
         createdAt: new Date('2026-01-28T16:00:00Z'),
         owner: {} as any,
         category: { id: 'cat-6', name: 'SaaS' } as any,
-        tags: [{ id: 'tag-2', name: 'backend', slug: 'backend' }, { id: 'tag-14', name: 'typescript', slug: 'typescript' }],
+        tags: [{ id: 'tag-15', name: 'go', slug: 'go' }, { id: 'tag-16', name: 'backend', slug: 'backend' }, { id: 'tag-17', name: 'docker', slug: 'docker' }],
     },
 ])
 
 let searchTimeout: NodeJS.Timeout
-watch([searchQuery, selectedCategory, selectedSort], () => {
+watch([searchQuery, selectedTag, selectedSort], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     router.replace({
       query: {
         q: searchQuery.value || undefined,
-        category: selectedCategory.value !== 'all' ? selectedCategory.value : undefined,
+        tag: selectedTag.value !== 'all' ? selectedTag.value : undefined,
         sort: selectedSort.value !== 'newest' ? selectedSort.value : undefined,
       }
     })
@@ -129,8 +138,8 @@ const filteredProjects = computed(() => {
     )
   }
 
-  if (selectedCategory.value !== 'all') {
-    result = result.filter(p => p.category?.name === selectedCategory.value)
+  if (selectedTag.value !== 'all') {
+    result = result.filter(p => p.tags?.some(t => t.slug === selectedTag.value || t.name.toLowerCase() === selectedTag.value))
   }
 
   if (selectedSort.value === 'readiness') {
@@ -146,7 +155,7 @@ const filteredProjects = computed(() => {
 
 const clearFilters = () => {
   searchQuery.value = ''
-  selectedCategory.value = 'all'
+  selectedTag.value = 'all'
   selectedSort.value = 'newest'
 }
 </script>
@@ -183,19 +192,24 @@ const clearFilters = () => {
       </div>
     </div>
 
-    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-      <button
-        v-for="cat in categories"
-        :key="cat.id"
-        @click="selectedCategory = cat.id"
-        :class="['px-4 py-2 text-xs font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer',
-          selectedCategory === cat.id 
-            ? 'bg-primary text-primary-foreground font-semibold' 
-            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-        ]"
-      >
-        {{ cat.label }}
-      </button>
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+          <Tag class="w-3.5 h-3.5" /> Categories:
+        </span>
+        <button
+          v-for="cat in categories"
+          :key="cat.id"
+          @click="selectedTag = cat.id"
+          :class="['px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer border',
+            selectedTag === cat.id 
+              ? 'bg-accent text-accent-foreground border-primary font-semibold' 
+              : 'bg-background text-muted-foreground border-border hover:border-muted-foreground'
+          ]"
+        >
+          {{ cat.label }}
+        </button>
+      </div>
     </div>
 
     <div class="min-h-[400px]">
