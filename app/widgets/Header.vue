@@ -23,11 +23,11 @@ const { user, logout } = useAuth()
 				</h1>
 			</button>
 			<!--<span class="text-sm text-muted-foreground whitespace-nowrap pl-2 border-l border-border"></span>-->
-			<Button
+			<!--<Button
 				variant="ghost"
-				@click="navigateTo('/publish')"
+				@click="navigateTo('/projects/create')"
 				>Publish Project</Button
-			>
+			>-->
 			<Button
 				variant="ghost"
 				@click="navigateTo('/projects')"
@@ -35,7 +35,9 @@ const { user, logout } = useAuth()
 			>
 		</div>
 		<div class="flex items-center gap-3 shrink-0">
-			<Button class="bg-primary text-primary-foreground hover:bg-primary/90"
+			<Button
+				class="bg-primary text-primary-foreground hover:bg-primary/90"
+				@click="navigateTo('/projects/create')"
 				>Publish Project</Button
 			>
 			<template v-if="user">

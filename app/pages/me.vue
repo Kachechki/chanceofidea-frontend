@@ -1,20 +1,32 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import {
 	Package, HeartHandshake, Bookmark, FileText, Plus, Globe
 } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
+import { useProjectsStore } from '~/stores/projectsStore'
 
 const { user, ready } = useAuth()
+const projectsStore = useProjectsStore()
+const { myProjects, loading: projectsLoading, error: projectsError } = storeToRefs(projectsStore)
 
 // Active tab: 'created' | 'adopted' | 'requests' | 'favorites'
 const activeTab = ref<'created' | 'adopted' | 'requests' | 'favorites'>('created')
 
-// Projects owned by the user come from /me. Adopted, requests and favorites
-// have no backend data source yet, so they stay empty.
-const createdProjects = computed<ProjectEntity[]>(() => user.value?.projects ?? [])
+// Load the user's projects once the session is known. Adopted, requests and
+// favorites have no backend data source yet, so they stay empty.
+watch(
+	() => user.value?.id,
+	(id) => {
+		if (id) projectsStore.fetchMyProjects()
+	},
+	{ immediate: true }
+)
+
+const createdProjects = computed<ProjectEntity[]>(() => myProjects.value)
 const adoptedProjects = computed<ProjectEntity[]>(() => [])
 const incomingRequests = computed<never[]>(() => [])
 const outgoingRequests = computed<never[]>(() => [])
@@ -139,7 +151,11 @@ const tabClass = (tab: typeof activeTab.value) => [
       <div class="min-h-[300px]">
         <!-- 1. CREATED PROJECTS -->
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
-          <div v-if="createdProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
+          <div v-if="projectsLoading && createdProjects.length === 0" class="py-16 text-center text-muted-foreground">
+            Loading projects...
+          </div>
+          <div v-else-if="createdProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card v-for="project in createdProjects" :key="project.id" class="p-6 flex flex-col justify-between gap-4">
               <div class="flex flex-col gap-2">
                 <div class="flex items-center justify-between">
@@ -168,7 +184,7 @@ const tabClass = (tab: typeof activeTab.value) => [
                 You haven't published any side projects. Share your unfinished work with developers who will finish it.
               </p>
             </div>
-            <NuxtLink to="/publish">
+            <NuxtLink to="/projects/create">
               <Button class="mt-2 flex items-center gap-2">
                 <Plus class="w-4 h-4" /> Publish your first project
               </Button>
