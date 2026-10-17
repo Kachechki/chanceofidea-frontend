@@ -3,8 +3,9 @@ import { type ProjectEntity } from '~/types/project'
 import type { UserEntity } from '~/types/user'
 import type { CategoryEntity } from '~/types/category'
 import type { TagEntity } from '~/types/tag'
+import { getProjectFullName } from '~/lib/project'
 
-export type ProjectSort = 'newest' | 'readiness' | 'most applications'
+export type ProjectSort = 'newest' | 'readiness' | 'name'
 
 // Mirrors the backend CreateProjectDto
 export interface CreateProjectInput {
@@ -79,9 +80,9 @@ export const useProjectsStore = defineStore('projects', {
 					(a, b) =>
 						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 				)
-			} else if (state.selectedSort === 'most applications') {
-				result = [...result].sort(
-					(a, b) => (b.repositoryId || 0) - (a.repositoryId || 0)
+			} else if (state.selectedSort === 'name') {
+				result = [...result].sort((a, b) =>
+					getProjectFullName(a).localeCompare(getProjectFullName(b))
 				)
 			}
 

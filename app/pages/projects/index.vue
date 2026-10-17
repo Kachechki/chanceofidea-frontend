@@ -95,7 +95,7 @@ watch([searchQuery, selectedTag, selectedSort], () => {
 				>
 					<option value="newest">Sort: Newest</option>
 					<option value="readiness">Sort: Readiness</option>
-					<option value="most applications">Sort: Most Applications</option>
+					<option value="name">Sort: Name</option>
 				</select>
 			</div>
 		</div>

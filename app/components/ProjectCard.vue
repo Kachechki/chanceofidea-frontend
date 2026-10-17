@@ -12,11 +12,16 @@
 			<CardContent class="p-6 flex flex-col gap-4">
 				<!-- Title & Status Indicator -->
 				<div class="flex items-start justify-between gap-4">
-					<h3
-						class="text-xl font-bold text-card-foreground tracking-tight truncate"
-					>
-						{{ project.title }}
-					</h3>
+					<div class="min-w-0">
+						<h3
+							class="text-xl font-bold text-card-foreground tracking-tight truncate"
+						>
+							{{ project.title }}
+						</h3>
+						<p class="text-xs font-mono text-muted-foreground truncate">
+							{{ fullName }}
+						</p>
+					</div>
 					<div
 						v-if="project.status"
 						:class="[
@@ -38,7 +43,7 @@
 					<div class="flex flex-wrap items-center gap-1.5">
 						<span
 							v-for="tag in project.tags"
-							:key="tag.id || tag"
+							:key="tag.id"
 							class="px-2.5 py-1 text-xs font-medium bg-accent text-secondary-foreground rounded-md"
 						>
 							{{
@@ -64,8 +69,7 @@
 						</button>
 
 						<a
-							v-if="project.repostoryUrl"
-							:href="project.repostoryUrl"
+							:href="repoUrl"
 							target="_blank"
 							rel="noopener noreferrer"
 							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer inline-flex items-center justify-center"
@@ -74,15 +78,6 @@
 						>
 							<ExternalLink class="w-4 h-4" />
 						</a>
-						<button
-							v-else
-							type="button"
-							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer"
-							@click="$emit('external', project)"
-							aria-label="Open repository link"
-						>
-							<ExternalLink class="w-4 h-4" />
-						</button>
 					</div>
 				</div>
 			</CardContent>
@@ -93,6 +88,7 @@
 import { Bookmark, ExternalLink } from '@lucide/vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
+import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
 
 interface Props {
 	project: ProjectEntity
@@ -100,10 +96,13 @@ interface Props {
 	isBookmarked?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
 	bannerClass: '',
 	isBookmarked: false,
 })
+
+const fullName = computed(() => getProjectFullName(props.project))
+const repoUrl = computed(() => getProjectRepoUrl(props.project))
 
 defineEmits<{
 	(e: 'bookmark', project: ProjectEntity): void
