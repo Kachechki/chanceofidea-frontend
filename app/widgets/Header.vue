@@ -39,11 +39,18 @@ const { user, logout } = useAuth()
 				>Publish Project</Button
 			>
 			<template v-if="user">
-				<img
-					:src="user.avatarUrl"
-					:alt="user.login"
-					class="w-8 h-8 rounded-full border border-border object-cover"
-				/>
+				<button
+					type="button"
+					class="rounded-full cursor-pointer focus-visible:ring-3 focus-visible:ring-ring/50 outline-none"
+					aria-label="Open profile"
+					@click="navigateTo('/me')"
+				>
+					<img
+						:src="user.avatarUrl"
+						:alt="user.login"
+						class="w-8 h-8 rounded-full border border-border object-cover"
+					/>
+				</button>
 				<Button
 					variant="outline"
 					class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"

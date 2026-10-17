@@ -3,6 +3,8 @@ import type { UserEntity } from '~/types/user'
 export const useAuth = () => {
 	const config = useRuntimeConfig()
 	const user = useState<UserEntity | null>('auth-user', () => null)
+	// false until the first session check has finished (distinguishes loading from logged out)
+	const ready = useState<boolean>('auth-ready', () => false)
 
 	const login = () => {
 		const state = crypto.randomUUID()
@@ -22,6 +24,8 @@ export const useAuth = () => {
 			user.value = await $fetch<UserEntity>('/api/user/me')
 		} catch {
 			user.value = null
+		} finally {
+			ready.value = true
 		}
 	}
 
@@ -31,5 +35,5 @@ export const useAuth = () => {
 		await navigateTo('/')
 	}
 
-	return { user, login, fetchMe, logout }
+	return { user, ready, login, fetchMe, logout }
 }
