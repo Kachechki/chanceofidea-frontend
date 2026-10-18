@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type ProjectEntity } from '~/types/project'
 import type { UserEntity } from '~/types/user'
-import type { CategoryEntity } from '~/types/category'
+import { ALL_CATEGORY_ID, type CategoryEntity } from '~/types/category'
 import type { TagEntity } from '~/types/tag'
 import { getProjectFullName } from '~/lib/project'
 
@@ -28,19 +28,20 @@ const errorMessage = (err: unknown, fallback: string) => {
 
 export const useProjectsStore = defineStore('projects', {
 	state: () => ({
-		// Catalog (all published projects)
+		// Catalog (projects matching the server-side filters)
 		projects: [] as ProjectEntity[],
 		// Projects owned by the logged-in user (profile page)
 		myProjects: [] as ProjectEntity[],
 		// Last project loaded by id (detail page)
 		currentProject: null as ProjectEntity | null,
-		// Options for the create form
+		// Filter and form options from the backend
 		categories: [] as CategoryEntity[],
 		tags: [] as TagEntity[],
 
-		// Catalog filters
+		// Catalog filters. Category and tags are sent to the server; search and sort run locally.
 		searchQuery: '',
-		selectedTag: 'all',
+		selectedCategoryId: ALL_CATEGORY_ID,
+		selectedTagIds: [] as string[],
 		selectedSort: 'newest' as ProjectSort,
 
 		loading: false,
@@ -48,6 +49,11 @@ export const useProjectsStore = defineStore('projects', {
 	}),
 
 	getters: {
+		// Categories a project can be published under (the all-categories row is filter-only)
+		selectableCategories(state): CategoryEntity[] {
+			return state.categories.filter((c) => c.id !== ALL_CATEGORY_ID)
+		},
+
 		filteredProjects(state): ProjectEntity[] {
 			let result = state.projects
 
@@ -58,16 +64,6 @@ export const useProjectsStore = defineStore('projects', {
 						p.title.toLowerCase().includes(query) ||
 						p.description.toLowerCase().includes(query) ||
 						p.tags?.some((t) => t.name.toLowerCase().includes(query))
-				)
-			}
-
-			if (state.selectedTag !== 'all') {
-				result = result.filter((p) =>
-					p.tags?.some(
-						(t) =>
-							t.slug === state.selectedTag ||
-							t.name.toLowerCase() === state.selectedTag
-					)
 				)
 			}
 
@@ -100,23 +96,54 @@ export const useProjectsStore = defineStore('projects', {
 			)
 		},
 
-		clearFilters() {
-			this.searchQuery = ''
-			this.selectedTag = 'all'
-			this.selectedSort = 'newest'
+		// The backend filters by slugs, so ids are converted here
+		buildFilterQuery() {
+			const category = this.categories.find(
+				(c) => c.id === this.selectedCategoryId && c.id !== ALL_CATEGORY_ID
+			)
+			const tagSlugs = this.tags
+				.filter((t) => this.selectedTagIds.includes(t.id))
+				.map((t) => t.slug)
+
+			return {
+				...(category ? { categorySlugs: category.slug } : {}),
+				...(tagSlugs.length > 0 ? { tagSlugs } : {}),
+			}
 		},
 
 		async fetchProjects() {
 			this.loading = true
 			this.error = null
 			try {
-				// GET /project without an id is not a list endpoint on the backend; use the filter route
-				this.projects = await $fetch<ProjectEntity[]>('/api/project/projects/0')
+				// Page 0 is the first 20 results
+				this.projects = await $fetch<ProjectEntity[]>('/api/project/projects/0', {
+					query: this.buildFilterQuery(),
+				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to load projects')
 			} finally {
 				this.loading = false
 			}
+		},
+
+		async setCategory(id: string) {
+			this.selectedCategoryId = id
+			await this.fetchProjects()
+		},
+
+		async toggleTag(id: string) {
+			this.selectedTagIds = this.selectedTagIds.includes(id)
+				? this.selectedTagIds.filter((t) => t !== id)
+				: [...this.selectedTagIds, id]
+			await this.fetchProjects()
+		},
+
+		async clearFilters() {
+			this.searchQuery = ''
+			this.selectedCategoryId = ALL_CATEGORY_ID
+			this.selectedTagIds = []
+			this.selectedSort = 'newest'
+			await this.fetchProjects()
 		},
 
 		async fetchProjectById(id: string) {
@@ -170,7 +197,7 @@ export const useProjectsStore = defineStore('projects', {
 			if (input.publish) await this.fetchProjects()
 		},
 
-		// Options for the create form. Endpoints are assumed; confirm against the backend.
+		// Filter and form options. Endpoints are assumed; confirm against the backend.
 		async fetchCategories() {
 			try {
 				this.categories = await $fetch<CategoryEntity[]>('/api/category')

@@ -14,7 +14,7 @@ import { useProjectsStore } from '~/stores/projectsStore'
 
 const { user, ready } = useAuth()
 const projectsStore = useProjectsStore()
-const { categories, tags, loading, error } = storeToRefs(projectsStore)
+const { selectableCategories, tags, loading, error } = storeToRefs(projectsStore)
 
 const form = reactive({
 	title: '',
@@ -166,7 +166,7 @@ const fieldClass =
 								Select a category
 							</option>
 							<option
-								v-for="cat in categories"
+								v-for="cat in selectableCategories"
 								:key="cat.id"
 								:value="cat.id"
 							>

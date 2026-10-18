@@ -1,66 +1,90 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { Search, RotateCcw, Package, Tag } from '@lucide/vue'
+import { Search, RotateCcw, Package, Tag, Folder } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
-import { useProjectsStore } from '~/stores/projectsStore'
+import { ALL_CATEGORY_ID } from '~/types/category'
+import type { ProjectSort } from '~/stores/projectsStore'
 
 const route = useRoute()
 const router = useRouter()
 const projectsStore = useProjectsStore()
 const {
+	categories,
+	tags,
 	searchQuery,
-	selectedTag,
+	selectedCategoryId,
+	selectedTagIds,
 	selectedSort,
 	filteredProjects,
 	loading,
 	error,
 } = storeToRefs(projectsStore)
-const { clearFilters } = projectsStore
+const { setCategory, toggleTag, clearFilters } = projectsStore
 
-// Filters start from the URL so a shared link reproduces the same view
-searchQuery.value = (route.query.q as string) || ''
-selectedTag.value = (route.query.tag as string) || 'all'
-selectedSort.value = ((route.query.sort as string) ||
-	'newest') as typeof selectedSort.value
+const selectedCategorySlug = computed(
+	() =>
+		categories.value.find(
+			(c) => c.id === selectedCategoryId.value && c.id !== ALL_CATEGORY_ID
+		)?.slug
+)
+const selectedTagSlugs = computed(() =>
+	tags.value
+		.filter((t) => selectedTagIds.value.includes(t.id))
+		.map((t) => t.slug)
+)
 
-const categories = [
-	{ id: 'all', label: 'All Categories' },
-	{ id: 'python', label: 'Python' },
-	{ id: 'java', label: 'Java' },
-	{ id: 'frontend', label: 'Frontend' },
-	{ id: 'backend', label: 'Backend' },
-	{ id: 'cybersecurity', label: 'Cybersecurity' },
-	{ id: 'tg bot', label: 'TG Bot' },
-	{ id: 'rust', label: 'Rust' },
-	{ id: 'go', label: 'Go' },
-	{ id: 'vue.js', label: 'Vue.js' },
-	{ id: 'node.js', label: 'Node.js' },
-	{ id: 'typescript', label: 'TypeScript' },
-	{ id: 'react', label: 'React' },
-	{ id: 'docker', label: 'Docker' },
-	{ id: 'ai', label: 'AI' },
-	{ id: 'c', label: 'C' },
-	{ id: 'other', label: 'Other' },
-]
+const queryList = (value: unknown): string[] =>
+	Array.isArray(value) ? value.map(String) : value ? [String(value)] : []
 
-onMounted(() => projectsStore.fetchProjects())
+onMounted(async () => {
+	await Promise.all([
+		projectsStore.fetchCategories(),
+		projectsStore.fetchTags(),
+	])
 
-// Keep the URL in sync with the filters (debounced)
-let searchTimeout: ReturnType<typeof setTimeout>
-watch([searchQuery, selectedTag, selectedSort], () => {
-	clearTimeout(searchTimeout)
-	searchTimeout = setTimeout(() => {
-		router.replace({
-			query: {
-				q: searchQuery.value || undefined,
-				tag: selectedTag.value !== 'all' ? selectedTag.value : undefined,
-				sort: selectedSort.value !== 'newest' ? selectedSort.value : undefined,
-			},
-		})
-	}, 300)
+	searchQuery.value = String(route.query.q ?? '')
+
+	const sort = String(route.query.sort ?? 'newest')
+	if (['newest', 'readiness', 'name'].includes(sort)) {
+		selectedSort.value = sort as ProjectSort
+	}
+
+	const categorySlug = String(route.query.category ?? '')
+	selectedCategoryId.value =
+		categories.value.find((c) => c.slug === categorySlug)?.id ?? ALL_CATEGORY_ID
+
+	const tagSlugs = queryList(route.query.tag)
+	selectedTagIds.value = tags.value
+		.filter((t) => tagSlugs.includes(t.slug))
+		.map((t) => t.id)
+
+	await projectsStore.fetchProjects()
 })
+
+let searchTimeout: ReturnType<typeof setTimeout>
+watch(
+	[searchQuery, selectedCategorySlug, selectedTagSlugs, selectedSort],
+	() => {
+		clearTimeout(searchTimeout)
+		searchTimeout = setTimeout(() => {
+			router.replace({
+				query: {
+					q: searchQuery.value || undefined,
+					category: selectedCategorySlug.value,
+					tag:
+						selectedTagSlugs.value.length > 0
+							? selectedTagSlugs.value
+							: undefined,
+					sort:
+						selectedSort.value !== 'newest' ? selectedSort.value : undefined,
+				},
+			})
+		}, 300)
+	},
+	{ deep: true }
+)
 </script>
 
 <template>
@@ -83,7 +107,7 @@ watch([searchQuery, selectedTag, selectedSort], () => {
 				<input
 					v-model="searchQuery"
 					type="text"
-					placeholder="Search projects by title or description..."
+					placeholder="Search loaded projects by title, description or tag..."
 					class="w-full pl-9 pr-4 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
 				/>
 			</div>
@@ -105,20 +129,43 @@ watch([searchQuery, selectedTag, selectedSort], () => {
 				<span
 					class="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1"
 				>
-					<Tag class="w-3.5 h-3.5" /> Categories:
+					<Folder class="w-3.5 h-3.5" /> Categories:
 				</span>
 				<button
 					v-for="cat in categories"
 					:key="cat.id"
-					@click="selectedTag = cat.id"
+					@click="setCategory(cat.id)"
 					:class="[
 						'px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer border',
-						selectedTag === cat.id
+						selectedCategoryId === cat.id
 							? 'bg-accent text-accent-foreground border-primary font-semibold'
 							: 'bg-background text-muted-foreground border-border hover:border-muted-foreground',
 					]"
 				>
-					{{ cat.label }}
+					{{ cat.name }}
+				</button>
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-3 -mt-6">
+			<div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+				<span
+					class="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1"
+				>
+					<Tag class="w-3.5 h-3.5" /> Tags:
+				</span>
+				<button
+					v-for="tag in tags"
+					:key="tag.id"
+					@click="toggleTag(tag.id)"
+					:class="[
+						'px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer border',
+						selectedTagIds.includes(tag.id)
+							? 'bg-accent text-accent-foreground border-primary font-semibold'
+							: 'bg-background text-muted-foreground border-border hover:border-muted-foreground',
+					]"
+				>
+					{{ tag.name }}
 				</button>
 			</div>
 		</div>
