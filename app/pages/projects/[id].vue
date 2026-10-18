@@ -1,9 +1,19 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { Button } from '~/widgets/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '~/widgets/ui/card'
-import { LoaderCircle } from '@lucide/vue'
+import { Card, CardContent } from '~/widgets/ui/card'
+import {
+	LoaderCircle,
+	ExternalLink,
+	Folder,
+	Clock,
+	Tag,
+	Sprout,
+} from '@lucide/vue'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
+import { ProjectStatusEnum } from '~/types/project'
 
 const projectsStore = useProjectsStore()
 const route = useRoute()
@@ -11,9 +21,47 @@ const error = ref('')
 const loading = ref(true)
 const project = computed(() => projectsStore.currentProject)
 
-const fullName = computed(() => (project.value ? getProjectFullName(project.value) : ''))
-const repoUrl = computed(() => (project.value ? getProjectRepoUrl(project.value) : '#'))
-const readinessPercent = computed(() => Math.round((project.value?.readiness ?? 0) * 100))
+const fullName = computed(() =>
+	project.value ? getProjectFullName(project.value) : ''
+)
+const repoUrl = computed(() =>
+	project.value ? getProjectRepoUrl(project.value) : '#'
+)
+const readinessPercent = computed(() =>
+	Math.round((project.value?.readiness ?? 0) * 100)
+)
+
+const readinessLabel = computed(() => {
+	const value = readinessPercent.value
+	if (value >= 100) return 'Ready to take over'
+	if (value >= 60) return 'Nearly there'
+	if (value >= 25) return 'In progress'
+	return 'Early stage'
+})
+
+const statusStyle = computed(() => {
+	switch (project.value?.status) {
+		case ProjectStatusEnum.PUBLISHED:
+			return { dot: 'bg-emerald-500', label: 'Published' }
+		case ProjectStatusEnum.TRANSFERRING:
+			return { dot: 'bg-amber-400', label: 'Transferring' }
+		case ProjectStatusEnum.ADOPTED:
+			return { dot: 'bg-blue-500', label: 'Adopted' }
+		case ProjectStatusEnum.DRAFT:
+			return { dot: 'bg-gray-500', label: 'Draft' }
+		default:
+			return { dot: 'bg-emerald-500', label: project.value?.status ?? '' }
+	}
+})
+
+const createdDate = computed(() => {
+	if (!project.value?.createdAt) return ''
+	return new Date(project.value.createdAt).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	})
+})
 
 onMounted(async () => {
 	const id = String(route.params.id ?? '')
@@ -31,92 +79,211 @@ onMounted(async () => {
 <template>
 	<div
 		v-if="loading"
-		class="w-full h-full flex flex-col items-center justify-center py-24"
+		class="w-full flex flex-col items-center justify-center py-32"
 	>
 		<LoaderCircle class="w-16 h-16 animate-spin text-muted-foreground" />
 	</div>
+
 	<div
 		v-else-if="error || !project"
-		class="w-full h-full flex flex-col items-center justify-center py-24"
+		class="w-full flex flex-col items-center justify-center py-32 gap-4"
 	>
 		<p class="text-sm text-center text-destructive">
 			{{ error || 'Project not found' }}
 		</p>
+		<NuxtLink to="/projects">
+			<Button variant="outline">Back to catalog</Button>
+		</NuxtLink>
 	</div>
+
 	<div
 		v-else
 		class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8"
 	>
-		<div class="flex flex-col gap-3">
-			<div class="flex items-center gap-3">
-				<h1 class="text-3xl font-bold text-foreground">
-					{{ project.title }}
-				</h1>
-				<span
-					class="px-2.5 py-1 text-xs font-mono rounded bg-secondary text-secondary-foreground"
-				>
-					{{ project.status }}
-				</span>
-			</div>
-			<p class="text-muted-foreground text-sm font-mono">
-				{{ fullName }}
-			</p>
-			<p v-if="project.category" class="text-muted-foreground text-sm">
-				{{ project.category.name }}
-			</p>
-		</div>
+		<!-- HERO -->
+		<section
+			class="relative overflow-hidden bg-card border border-border rounded-2xl p-8 shadow-sm"
+		>
+			<div
+				class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/10 blur-3xl"
+			/>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-			<div class="lg:col-span-2 flex flex-col gap-6">
-				<Card class="rounded-2xl">
-					<CardHeader>
-						<CardTitle class="text-lg">About</CardTitle>
-					</CardHeader>
-					<CardContent class="text-muted-foreground leading-relaxed">
-						{{ project.description }}
-					</CardContent>
-				</Card>
-
-				<Card class="rounded-2xl">
-					<CardHeader>
-						<CardTitle class="text-lg">Tags</CardTitle>
-					</CardHeader>
-					<CardContent class="flex flex-wrap gap-2">
+			<div
+				class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8"
+			>
+				<div class="flex flex-col gap-4 min-w-0">
+					<div class="flex flex-wrap items-center gap-3">
 						<span
-							v-for="tag in project.tags"
-							:key="tag.id"
-							class="px-2.5 py-1 text-xs font-medium bg-accent text-secondary-foreground rounded-md"
+							class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-muted text-foreground"
 						>
-							{{ tag.name }}
+							<span
+								:class="['w-2 h-2 rounded-full', statusStyle.dot]"
+							/>
+							{{ statusStyle.label }}
 						</span>
+						<span
+							v-if="project.category"
+							class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
+						>
+							<Folder class="w-3.5 h-3.5" />
+							{{ project.category.name }}
+						</span>
+					</div>
+
+					<h1
+						class="text-4xl font-bold text-foreground tracking-tight break-words"
+					>
+						{{ project.title }}
+					</h1>
+
+					<p class="text-sm font-mono text-muted-foreground break-all">
+						{{ fullName }}
+					</p>
+				</div>
+
+				<div class="flex flex-wrap items-center gap-3 shrink-0">
+					<a
+						:href="repoUrl"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Button class="gap-2">
+							<ExternalLink class="w-4 h-4" />
+							Open repository
+						</Button>
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- BODY -->
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+			<!-- MAIN COLUMN -->
+			<div class="lg:col-span-2 flex flex-col gap-6">
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-8 flex flex-col gap-4">
+						<h2 class="text-lg font-semibold text-foreground">About</h2>
+						<p class="text-muted-foreground leading-relaxed whitespace-pre-line">
+							{{ project.description }}
+						</p>
+					</CardContent>
+				</Card>
+
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-8 flex flex-col gap-4">
+						<h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
+							<Tag class="w-4 h-4 text-muted-foreground" /> Tags
+						</h2>
+						<div
+							v-if="project.tags?.length"
+							class="flex flex-wrap gap-2"
+						>
+							<span
+								v-for="tag in project.tags"
+								:key="tag.id"
+								class="px-3 py-1.5 text-xs font-medium bg-accent text-accent-foreground rounded-md border border-border"
+							>
+								#{{ tag.name }}
+							</span>
+						</div>
+						<p
+							v-else
+							class="text-sm text-muted-foreground"
+						>
+							No tags yet.
+						</p>
 					</CardContent>
 				</Card>
 			</div>
 
-			<div class="flex flex-col gap-6">
-				<Card class="rounded-2xl">
-					<CardHeader>
-						<CardTitle class="text-lg">Readiness</CardTitle>
-					</CardHeader>
-					<CardContent class="flex flex-col gap-4">
-						<div class="text-3xl font-bold text-foreground">
-							{{ readinessPercent }}%
+			<!-- SIDEBAR -->
+			<aside class="flex flex-col gap-6">
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-6 flex flex-col gap-5">
+						<div class="flex items-center justify-between">
+							<h2 class="text-lg font-semibold text-foreground">Readiness</h2>
+							<span class="text-xs font-medium text-muted-foreground">
+								{{ readinessLabel }}
+							</span>
 						</div>
-						<div class="h-2 w-full rounded-full bg-muted overflow-hidden">
+
+						<div class="flex items-end gap-2">
+							<span class="text-5xl font-bold text-foreground tabular-nums">
+								{{ readinessPercent }}
+							</span>
+							<span class="text-xl font-semibold text-muted-foreground pb-1">%</span>
+						</div>
+
+						<div class="h-3 w-full rounded-full bg-muted overflow-hidden">
 							<div
-								class="h-full bg-primary"
+								class="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-700"
 								:style="{ width: `${readinessPercent}%` }"
 							/>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card class="rounded-2xl">
-					<CardHeader>
-						<CardTitle class="text-lg">Repository</CardTitle>
-					</CardHeader>
-					<CardContent class="flex flex-col gap-4">
-						<p class="text-sm text-muted-foreground font-mono break-all">
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-6 flex flex-col gap-4">
+						<h2 class="text-lg font-semibold text-foreground">Details</h2>
+						<dl class="flex flex-col gap-3 text-sm">
+							<div class="flex items-center justify-between gap-4">
+								<dt class="flex items-center gap-2 text-muted-foreground">
+									<Sprout class="w-4 h-4" /> Status
+								</dt>
+								<dd class="font-medium text-foreground">{{ statusStyle.label }}</dd>
+							</div>
+							<div class="flex items-center justify-between gap-4">
+								<dt class="flex items-center gap-2 text-muted-foreground">
+									<Folder class="w-4 h-4" /> Category
+								</dt>
+								<dd class="font-medium text-foreground">
+									{{ project.category?.name ?? '—' }}
+								</dd>
+							</div>
+							<div class="flex items-center justify-between gap-4">
+								<dt class="flex items-center gap-2 text-muted-foreground">
+									<Clock class="w-4 h-4" /> Created
+								</dt>
+								<dd class="font-medium text-foreground">{{ createdDate || '—' }}</dd>
+							</div>
+						</dl>
+					</CardContent>
+				</Card>
+
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-6 flex flex-col gap-4">
+						<h2 class="text-lg font-semibold text-foreground">Owner</h2>
+						<div class="flex items-center gap-3 min-w-0">
+							<img
+								v-if="project.owner?.avatarUrl"
+								:src="project.owner.avatarUrl"
+								:alt="project.owner.login"
+								class="w-12 h-12 rounded-full border border-border object-cover bg-secondary shrink-0"
+							/>
+							<div
+								v-else
+								class="w-12 h-12 rounded-full bg-secondary shrink-0"
+							/>
+							<div class="flex flex-col min-w-0">
+								<span class="font-semibold text-foreground truncate">
+									@{{ project.owner?.login ?? 'unknown' }}
+								</span>
+								<span
+									v-if="project.owner?.bio"
+									class="text-xs text-muted-foreground line-clamp-2"
+								>
+									{{ project.owner.bio }}
+								</span>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card class="rounded-2xl p-0">
+					<CardContent class="p-6 flex flex-col gap-4">
+						<h2 class="text-lg font-semibold text-foreground">Repository</h2>
+						<p class="text-sm font-mono text-muted-foreground break-all">
 							{{ fullName }}
 						</p>
 						<a
@@ -126,21 +293,15 @@ onMounted(async () => {
 						>
 							<Button
 								variant="outline"
-								class="w-full"
-							>Open repository</Button>
+								class="w-full gap-2"
+							>
+								<ExternalLink class="w-4 h-4" />
+								View on GitHub
+							</Button>
 						</a>
 					</CardContent>
 				</Card>
-
-				<Card class="rounded-2xl">
-					<CardHeader>
-						<CardTitle class="text-lg">Owner</CardTitle>
-					</CardHeader>
-					<CardContent class="text-sm text-muted-foreground">
-						@{{ project.owner?.login ?? 'unknown' }}
-					</CardContent>
-				</Card>
-			</div>
+			</aside>
 		</div>
 	</div>
 </template>
