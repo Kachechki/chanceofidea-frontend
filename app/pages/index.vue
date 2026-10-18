@@ -38,6 +38,7 @@ import LandingCard from '~/widgets/LandingCard.vue'
 						size="lg"
 						variant="outline"
 						class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
+						@click="navigateTo(`/projects`)"
 					>
 						Find a project
 					</Button>
