@@ -105,7 +105,7 @@ onMounted(async () => {
 			class="relative overflow-hidden bg-card border border-border rounded-2xl p-8 shadow-sm"
 		>
 			<div
-				class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/10 blur-3xl"
+				class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/20 blur-3xl"
 			/>
 
 			<div
@@ -116,18 +116,16 @@ onMounted(async () => {
 						<span
 							class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-muted text-foreground"
 						>
-							<span
-								:class="['w-2 h-2 rounded-full', statusStyle.dot]"
-							/>
+							<span :class="['w-2 h-2 rounded-full', statusStyle.dot]" />
 							{{ statusStyle.label }}
 						</span>
-						<span
+						<!--<span
 							v-if="project.category"
 							class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
 						>
 							<Folder class="w-3.5 h-3.5" />
 							{{ project.category.name }}
-						</span>
+						</span>-->
 					</div>
 
 					<h1
@@ -163,7 +161,9 @@ onMounted(async () => {
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-8 flex flex-col gap-4">
 						<h2 class="text-lg font-semibold text-foreground">About</h2>
-						<p class="text-muted-foreground leading-relaxed whitespace-pre-line">
+						<p
+							class="text-muted-foreground leading-relaxed whitespace-pre-line"
+						>
 							{{ project.description }}
 						</p>
 					</CardContent>
@@ -171,7 +171,9 @@ onMounted(async () => {
 
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-8 flex flex-col gap-4">
-						<h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
+						<h2
+							class="flex items-center gap-2 text-lg font-semibold text-foreground"
+						>
 							<Tag class="w-4 h-4 text-muted-foreground" /> Tags
 						</h2>
 						<div
@@ -211,7 +213,9 @@ onMounted(async () => {
 							<span class="text-5xl font-bold text-foreground tabular-nums">
 								{{ readinessPercent }}
 							</span>
-							<span class="text-xl font-semibold text-muted-foreground pb-1">%</span>
+							<span class="text-xl font-semibold text-muted-foreground pb-1"
+								>%</span
+							>
 						</div>
 
 						<div class="h-3 w-full rounded-full bg-muted overflow-hidden">
@@ -231,7 +235,9 @@ onMounted(async () => {
 								<dt class="flex items-center gap-2 text-muted-foreground">
 									<Sprout class="w-4 h-4" /> Status
 								</dt>
-								<dd class="font-medium text-foreground">{{ statusStyle.label }}</dd>
+								<dd class="font-medium text-foreground">
+									{{ statusStyle.label }}
+								</dd>
 							</div>
 							<div class="flex items-center justify-between gap-4">
 								<dt class="flex items-center gap-2 text-muted-foreground">
@@ -245,7 +251,9 @@ onMounted(async () => {
 								<dt class="flex items-center gap-2 text-muted-foreground">
 									<Clock class="w-4 h-4" /> Created
 								</dt>
-								<dd class="font-medium text-foreground">{{ createdDate || '—' }}</dd>
+								<dd class="font-medium text-foreground">
+									{{ createdDate || '—' }}
+								</dd>
 							</div>
 						</dl>
 					</CardContent>
