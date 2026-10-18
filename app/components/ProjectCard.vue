@@ -109,7 +109,6 @@ defineEmits<{
 	(e: 'external', project: ProjectEntity): void
 }>()
 
-// Map TypeORM status enum to Tailwind background colors for the status dot
 const getStatusColor = (status: ProjectStatusEnum | string) => {
 	switch (status) {
 		case ProjectStatusEnum.DRAFT:

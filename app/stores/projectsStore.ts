@@ -7,7 +7,6 @@ import { getProjectFullName } from '~/lib/project'
 
 export type ProjectSort = 'newest' | 'readiness' | 'name'
 
-// Mirrors the backend CreateProjectDto
 export interface CreateProjectInput {
 	title: string
 	description: string
@@ -28,17 +27,12 @@ const errorMessage = (err: unknown, fallback: string) => {
 
 export const useProjectsStore = defineStore('projects', {
 	state: () => ({
-		// Catalog (projects matching the server-side filters)
 		projects: [] as ProjectEntity[],
-		// Projects owned by the logged-in user (profile page)
 		myProjects: [] as ProjectEntity[],
-		// Last project loaded by id (detail page)
 		currentProject: null as ProjectEntity | null,
-		// Filter and form options from the backend
 		categories: [] as CategoryEntity[],
 		tags: [] as TagEntity[],
 
-		// Catalog filters. Category and tags are sent to the server; search and sort run locally.
 		searchQuery: '',
 		selectedCategoryId: ALL_CATEGORY_ID,
 		selectedTagIds: [] as string[],
@@ -49,7 +43,6 @@ export const useProjectsStore = defineStore('projects', {
 	}),
 
 	getters: {
-		// Categories a project can be published under (the all-categories row is filter-only)
 		selectableCategories(state): CategoryEntity[] {
 			return state.categories.filter((c) => c.id !== ALL_CATEGORY_ID)
 		},
@@ -87,7 +80,6 @@ export const useProjectsStore = defineStore('projects', {
 	},
 
 	actions: {
-		// Local lookup across everything already loaded
 		getProjectById(id: string): ProjectEntity | undefined {
 			return (
 				(this.currentProject?.id === id ? this.currentProject : undefined) ??
@@ -96,7 +88,6 @@ export const useProjectsStore = defineStore('projects', {
 			)
 		},
 
-		// The backend filters by slugs, so ids are converted here
 		buildFilterQuery() {
 			const category = this.categories.find(
 				(c) => c.id === this.selectedCategoryId && c.id !== ALL_CATEGORY_ID
@@ -115,10 +106,12 @@ export const useProjectsStore = defineStore('projects', {
 			this.loading = true
 			this.error = null
 			try {
-				// Page 0 is the first 20 results
-				this.projects = await $fetch<ProjectEntity[]>('/api/project/projects/0', {
-					query: this.buildFilterQuery(),
-				})
+				this.projects = await $fetch<ProjectEntity[]>(
+					'/api/project/projects/0',
+					{
+						query: this.buildFilterQuery(),
+					}
+				)
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to load projects')
 			} finally {
@@ -166,7 +159,6 @@ export const useProjectsStore = defineStore('projects', {
 			}
 		},
 
-		// Profile: projects of the logged-in user, taken from /me
 		async fetchMyProjects() {
 			this.loading = true
 			this.error = null
@@ -185,7 +177,6 @@ export const useProjectsStore = defineStore('projects', {
 			this.loading = true
 			this.error = null
 			try {
-				// Backend returns no body on create, so reload the lists instead
 				await $fetch('/api/project', { method: 'POST', body: input })
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to create project')
@@ -197,7 +188,6 @@ export const useProjectsStore = defineStore('projects', {
 			if (input.publish) await this.fetchProjects()
 		},
 
-		// Filter and form options. Endpoints are assumed; confirm against the backend.
 		async fetchCategories() {
 			try {
 				this.categories = await $fetch<CategoryEntity[]>('/api/category')
@@ -214,7 +204,6 @@ export const useProjectsStore = defineStore('projects', {
 			}
 		},
 
-		// Refresh a cached item in place; never adds, so unpublished projects don't leak into the catalog
 		replaceIfLoaded(list: ProjectEntity[], project: ProjectEntity) {
 			const index = list.findIndex((p) => p.id === project.id)
 			if (index !== -1) list[index] = project

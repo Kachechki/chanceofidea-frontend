@@ -14,7 +14,8 @@ import { useProjectsStore } from '~/stores/projectsStore'
 
 const { user, ready } = useAuth()
 const projectsStore = useProjectsStore()
-const { selectableCategories, tags, loading, error } = storeToRefs(projectsStore)
+const { selectableCategories, tags, loading, error } =
+	storeToRefs(projectsStore)
 
 const form = reactive({
 	title: '',
@@ -60,9 +61,7 @@ const submit = async (publish: boolean) => {
 			readiness: form.readinessPercent / 100,
 		})
 		await navigateTo('/me')
-	} catch {
-		// The store keeps the message in `error`
-	}
+	} catch {}
 }
 
 const fieldClass =

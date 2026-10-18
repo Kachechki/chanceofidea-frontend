@@ -1,6 +1,5 @@
 import type { ProjectEntity } from '~/types/project'
 
-// Full repo name, e.g. "alexdev/walkman-firmware"
 export const getProjectFullName = (
 	project: Pick<ProjectEntity, 'repositoryName' | 'owner'>
 ) =>
