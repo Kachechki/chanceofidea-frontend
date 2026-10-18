@@ -13,11 +13,8 @@ const { user, ready } = useAuth()
 const projectsStore = useProjectsStore()
 const { myProjects, loading: projectsLoading, error: projectsError } = storeToRefs(projectsStore)
 
-// Active tab: 'created' | 'adopted' | 'requests' | 'favorites'
 const activeTab = ref<'created' | 'adopted' | 'requests' | 'favorites'>('created')
 
-// Load the user's projects once the session is known. Adopted, requests and
-// favorites have no backend data source yet, so they stay empty.
 watch(
 	() => user.value?.id,
 	(id) => {
