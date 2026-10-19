@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+
+# Nuxt 4 needs Node >= 20.19 or >= 22.12
+ARG NODE_VERSION=22-slim
+
+FROM node:${NODE_VERSION} AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable
+WORKDIR /app
+
+# Install all dependencies (dev deps are needed to build).
+# Source is copied first because the postinstall script runs `nuxt prepare`.
+FROM base AS deps
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+# Build the Nuxt server bundle into .output
+FROM deps AS build
+ENV NODE_ENV=production
+RUN pnpm run build
+
+# Minimal runtime: only the built .output folder
+FROM node:${NODE_VERSION} AS runtime
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+WORKDIR /app
+
+COPY --from=build --chown=node:node /app/.output ./.output
+
+USER node
+EXPOSE 3000
+
+# Runtime config is read from env vars at start, so set these in your deploy platform:
+#   NUXT_BACKEND_URL            e.g. http://backend:4000
+#   NUXT_PUBLIC_GITHUB_CLIENT_ID
+#   NUXT_PUBLIC_API_BASE        (optional)
+CMD ["node", ".output/server/index.mjs"]

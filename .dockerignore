@@ -1,0 +1,27 @@
+# Dependencies and build output are rebuilt inside the image
+node_modules
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist
+
+# Local env files and secrets (pass config via env vars at deploy time)
+.env
+.env.*
+!.env.example
+
+# Version control and editor files
+.git
+.gitignore
+.idea
+.fleet
+.DS_Store
+logs
+*.log
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+.dockerignore
