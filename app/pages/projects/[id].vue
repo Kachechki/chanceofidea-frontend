@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
@@ -10,16 +10,92 @@ import {
 	Clock,
 	Tag,
 	Sprout,
+	HeartHandshake,
 } from '@lucide/vue'
 import { useProjectsStore } from '~/stores/projectsStore'
+import { useRequestsStore } from '~/stores/useRequestsStore'
+import AdoptionModal from '~/components/modals/AdoptionModal.vue'
 import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
 import { ProjectStatusEnum } from '~/types/project'
+import { ApplicationStatusEnum } from '~/types/application'
 
 const projectsStore = useProjectsStore()
+const requestsStore = useRequestsStore()
+const submitting = ref(false)
+const submitError = ref('')
+const { user } = useAuth()
 const route = useRoute()
 const error = ref('')
 const loading = ref(true)
+const showAdoption = ref(false)
 const project = computed(() => projectsStore.currentProject)
+
+// Load my applications so the button can show whether I already applied
+watch(
+	() => user.value?.id,
+	(id) => {
+		if (id) requestsStore.fetchOutgoing()
+	},
+	{ immediate: true }
+)
+
+const isOwner = computed(
+	() => !!user.value && project.value?.owner?.id === user.value.id
+)
+
+const myApplication = computed(() =>
+	project.value ? requestsStore.activeForProject(project.value.id) : undefined
+)
+
+// What the Apply button shows for the current viewer
+const applyState = computed(() => {
+	if (!user.value) return { label: 'Log in to request adoption', canApply: true }
+	if (isOwner.value) return { label: 'This is your project', canApply: false }
+	if (project.value?.status !== ProjectStatusEnum.PUBLISHED) {
+		return { label: 'Not open for requests', canApply: false }
+	}
+	if (myApplication.value) {
+		const label =
+			myApplication.value.status === ApplicationStatusEnum.ACCEPTED
+				? 'Request accepted'
+				: 'Request pending'
+		return { label, canApply: false }
+	}
+	return { label: 'Request to adopt', canApply: true }
+})
+
+const onApplyClick = () => {
+	if (!user.value) return navigateTo('/login')
+	if (applyState.value.canApply) {
+		submitError.value = ''
+		showAdoption.value = true
+	}
+}
+
+// The modal emits the raw form values. Map them to the backend DTO and send.
+const onSubmitApplication = async (form: {
+	whyMe: string
+	actionPlan: string
+	portfolioUrl: string
+	acceptTerms: boolean
+}) => {
+	if (!project.value) return
+	submitting.value = true
+	submitError.value = ''
+	try {
+		await requestsStore.apply({
+			projectId: project.value.id,
+			whyMe: form.whyMe.trim(),
+			plan: form.actionPlan.trim(),
+			portfolioUrl: form.portfolioUrl.trim() || undefined,
+		})
+		showAdoption.value = false
+	} catch (err) {
+		submitError.value = requestsStore.error ?? 'Failed to send application'
+	} finally {
+		submitting.value = false
+	}
+}
 
 const fullName = computed(() =>
 	project.value ? getProjectFullName(project.value) : ''
@@ -140,6 +216,15 @@ onMounted(async () => {
 				</div>
 
 				<div class="flex flex-wrap items-center gap-3 shrink-0">
+					<Button
+						variant="outline"
+						class="gap-2"
+						:disabled="!applyState.canApply"
+						@click="onApplyClick"
+					>
+						<HeartHandshake class="w-4 h-4" />
+						{{ applyState.label }}
+					</Button>
 					<a
 						:href="repoUrl"
 						target="_blank"
@@ -310,6 +395,15 @@ onMounted(async () => {
 					</CardContent>
 				</Card>
 			</aside>
+
+		<AdoptionModal
+			v-if="project"
+			:is-open="showAdoption"
+			:is-loading="submitting"
+			:error="submitError"
+			@close="showAdoption = false"
+			@submit="onSubmitApplication"
+		/>
 		</div>
 	</div>
 </template>

@@ -8,7 +8,7 @@ import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
-import { useRequestsStore } from '~/stores/RequestsStore'
+import { useRequestsStore } from '~/stores/useRequestsStore'
 
 const { user, ready } = useAuth()
 
@@ -55,12 +55,26 @@ const tabClass = (tab: typeof activeTab.value) => [
     : 'border-transparent text-muted-foreground hover:text-foreground',
 ]
 
-const handleAccept = (id: string) => {
-  requestsStore.acceptRequest?.(id)
+// Accepting starts the GitHub transfer, so ask first
+const handleAccept = async (id: string) => {
+  if (!window.confirm('Accept this applicant? The repository will be transferred to them on GitHub.')) return
+  try {
+    await requestsStore.acceptRequest(id)
+    // Accepting changes the project status to TRANSFERRING
+    projectsStore.fetchMyProjects()
+  } catch {
+    // The store keeps the message in `error`
+  }
 }
 
-const handleReject = (id: string) => {
-  requestsStore.rejectRequest?.(id)
+const handleReject = async (id: string) => {
+  const reason = window.prompt('Reason shown to the applicant:')
+  if (!reason || !reason.trim()) return
+  try {
+    await requestsStore.rejectRequest(id, reason.trim())
+  } catch {
+    // The store keeps the message in `error`
+  }
 }
 
 const handleWrite = (applicantId: string) => {
@@ -216,6 +230,8 @@ const handleWrite = (applicantId: string) => {
         </div>
 
         <div v-if="activeTab === 'requests'" class="flex flex-col gap-8">
+          <p v-if="requestsStore.error" class="text-sm text-destructive">{{ requestsStore.error }}</p>
+
           <div class="flex flex-col gap-4">
             <h2 class="text-md font-semibold text-foreground flex items-center gap-2">
               Incoming Requests

@@ -4,6 +4,7 @@ import type { UserEntity } from '~/types/user'
 import { ALL_CATEGORY_ID, type CategoryEntity } from '~/types/category'
 import type { TagEntity } from '~/types/tag'
 import { getProjectFullName } from '~/lib/project'
+import { errorMessage } from '~/lib/errors'
 
 export type ProjectSort = 'newest' | 'readiness' | 'name'
 
@@ -15,14 +16,6 @@ export interface CreateProjectInput {
 	tags: string[]
 	publish: boolean
 	readiness?: number
-}
-
-const errorMessage = (err: unknown, fallback: string) => {
-	const data = (err as { data?: { message?: string | string[] } })?.data
-	const message = Array.isArray(data?.message)
-		? data?.message.join(', ')
-		: data?.message
-	return message || (err instanceof Error ? err.message : fallback)
 }
 
 export const useProjectsStore = defineStore('projects', {

@@ -51,9 +51,11 @@
             class="rounded border-input text-primary focus:ring-ring"
           />
           <label for="terms" class="text-sm text-muted-foreground">
-            Згоден з умовами передачі проєкту від автора[cite: 8]
+            Згоден з умовами передачі проєкту від автора
           </label>
         </div>
+
+        <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
 
         <div class="flex justify-end space-x-3 pt-4 border-t border-border">
           <button 
@@ -77,18 +79,25 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, watch } from 'vue'
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
+  error: {
+    type: String,
+    default: ''
   }
 })
 
 const emit = defineEmits(['close', 'submit'])
 
-const isLoading = ref(false)
 const form = reactive({
   whyMe: '',
   actionPlan: '',
@@ -96,12 +105,20 @@ const form = reactive({
   acceptTerms: false
 })
 
+// Start from a clean form each time the modal opens
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (!open) return
+    form.whyMe = ''
+    form.actionPlan = ''
+    form.portfolioUrl = ''
+    form.acceptTerms = false
+  }
+)
+
+// The parent sends the request and handles loading and errors
 const handleSubmit = () => {
-  isLoading.value = true
-  // Тута підключиш стор потім
-  setTimeout(() => {
-    emit('submit', { ...form })
-    isLoading.value = false
-  }, 800)
+  emit('submit', { ...form })
 }
 </script>
