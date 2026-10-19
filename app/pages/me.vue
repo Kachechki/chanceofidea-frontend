@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
-	Package, HeartHandshake, Bookmark, FileText, Plus, Globe
+  Package, HeartHandshake, Bookmark, FileText, Plus, Globe
 } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
@@ -16,48 +16,91 @@ const { myProjects, loading: projectsLoading, error: projectsError } = storeToRe
 const activeTab = ref<'created' | 'adopted' | 'requests' | 'favorites'>('created')
 
 watch(
-	() => user.value?.id,
-	(id) => {
-		if (id) projectsStore.fetchMyProjects()
-	},
-	{ immediate: true }
+  () => user.value?.id,
+  (id) => {
+    if (id) {
+      projectsStore.fetchMyProjects()
+    }
+  },
+  { immediate: true }
 )
 
 const createdProjects = computed<ProjectEntity[]>(() => myProjects.value)
 const adoptedProjects = computed<ProjectEntity[]>(() => [])
-const incomingRequests = computed<never[]>(() => [])
-const outgoingRequests = computed<never[]>(() => [])
 const favoriteProjects = computed<ProjectEntity[]>(() => [])
 
+
+interface RequestItem {
+  id: string
+  createdAt: string
+  status: string
+  whyMe: string
+  actionPlan: string
+  portfolioUrl: string
+  applicant: {
+    id: string
+    name: string
+    avatar?: string
+  }
+}
+
+const incomingRequests = ref<RequestItem[]>([
+  {
+    id: 'req_1',
+    createdAt: '19.10.2026',
+    status: 'Pending',
+    whyMe: 'Маю досвід розробки на Nuxt 3 та хочу довести цей проєкт до релізу.',
+    actionPlan: '1. Оптимізувати архітектуру. 2. Додати фічі за 2-4 тижні.',
+    portfolioUrl: 'https://github.com/example-applicant',
+    applicant: {
+      id: 'user_2',
+      name: 'Олексій',
+      avatar: 'https://github.githubassets.com/favicons/favicon.svg'
+    }
+  }
+])
+
+const outgoingRequests = ref<RequestItem[]>([])
+
 const publishedCount = computed(
-	() => createdProjects.value.filter((p) => p.status === ProjectStatusEnum.PUBLISHED).length
+  () => createdProjects.value.filter((p) => p.status === ProjectStatusEnum.PUBLISHED).length
 )
 
 const joinedDate = computed(() => {
-	if (!user.value?.createdAt) return ''
-	return new Date(user.value.createdAt).toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-	})
+  if (!user.value?.createdAt) return ''
+  return new Date(user.value.createdAt).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 })
 
 const tabClass = (tab: typeof activeTab.value) => [
-	'px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-2',
-	activeTab.value === tab
-		? 'border-primary text-primary font-semibold'
-		: 'border-transparent text-muted-foreground hover:text-foreground',
+  'px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-2',
+  activeTab.value === tab
+    ? 'border-primary text-primary font-semibold'
+    : 'border-transparent text-muted-foreground hover:text-foreground',
 ]
+
+const handleAccept = (id: string) => {
+  console.log('Accept request:', id)
+}
+
+const handleReject = (id: string) => {
+  console.log('Reject request:', id)
+}
+
+const handleWrite = (applicantId: string) => {
+  console.log('Write to applicant:', applicantId)
+}
 </script>
 
 <template>
   <div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
-    <!-- Session check still running -->
     <div v-if="!ready" class="py-24 text-center text-muted-foreground">
       Loading profile...
     </div>
 
-    <!-- Not logged in -->
     <div
       v-else-if="!user"
       class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
@@ -68,7 +111,6 @@ const tabClass = (tab: typeof activeTab.value) => [
     </div>
 
     <template v-else>
-      <!-- PROFILE HEADER -->
       <div class="bg-card border border-border rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
         <div class="flex items-center gap-6">
           <img
@@ -99,7 +141,6 @@ const tabClass = (tab: typeof activeTab.value) => [
           </div>
         </div>
 
-        <!-- STATS BAR -->
         <div class="flex items-center gap-4 bg-muted/50 p-4 rounded-xl border border-border">
           <div class="text-center px-3">
             <div class="text-xl font-bold text-foreground">{{ publishedCount }}</div>
@@ -113,7 +154,6 @@ const tabClass = (tab: typeof activeTab.value) => [
         </div>
       </div>
 
-      <!-- TABS NAVIGATION -->
       <div class="flex items-center border-b border-border gap-2">
         <button :class="tabClass('created')" @click="activeTab = 'created'">
           <Package class="w-4 h-4" /> Created Projects
@@ -144,9 +184,8 @@ const tabClass = (tab: typeof activeTab.value) => [
         </button>
       </div>
 
-      <!-- TAB CONTENT -->
       <div class="min-h-[300px]">
-        <!-- 1. CREATED PROJECTS -->
+
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
           <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
           <div v-if="projectsLoading && createdProjects.length === 0" class="py-16 text-center text-muted-foreground">
@@ -189,7 +228,6 @@ const tabClass = (tab: typeof activeTab.value) => [
           </div>
         </div>
 
-        <!-- 2. ADOPTED PROJECTS -->
         <div v-if="activeTab === 'adopted'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
           <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <HeartHandshake class="w-6 h-6" />
@@ -205,23 +243,55 @@ const tabClass = (tab: typeof activeTab.value) => [
           </NuxtLink>
         </div>
 
-        <!-- 3. REQUESTS -->
-        <div v-if="activeTab === 'requests'" class="flex flex-col gap-6">
-          <div>
-            <h2 class="text-md font-semibold text-foreground mb-3">Incoming Requests (0)</h2>
-            <div class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center">
+        <div v-if="activeTab === 'requests'" class="flex flex-col gap-8">
+          <div class="flex flex-col gap-4">
+            <h2 class="text-md font-semibold text-foreground flex items-center gap-2">
+              Incoming Requests
+              <span class="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                {{ incomingRequests.length }}
+              </span>
+            </h2>
+
+            <div v-if="incomingRequests.length > 0" class="flex flex-col gap-4">
+              <RequestCard
+                v-for="req in incomingRequests"
+                :key="req.id"
+                :request="req"
+                :is-author-view="true"
+                @accept="handleAccept"
+                @reject="handleReject"
+                @write="handleWrite"
+              />
+            </div>
+
+            <div v-else class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center">
               No incoming adoption requests at the moment.
             </div>
           </div>
-          <div class="pt-4 border-t border-border">
-            <h2 class="text-md font-semibold text-foreground mb-3">Outgoing Requests (0)</h2>
-            <div class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center">
+
+          <div class="flex flex-col gap-4 pt-4 border-t border-border">
+            <h2 class="text-md font-semibold text-foreground flex items-center gap-2">
+              Outgoing Requests
+              <span class="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                {{ outgoingRequests.length }}
+              </span>
+            </h2>
+
+            <div v-if="outgoingRequests.length > 0" class="flex flex-col gap-4">
+              <RequestCard
+                v-for="req in outgoingRequests"
+                :key="req.id"
+                :request="req"
+                :is-author-view="false"
+              />
+            </div>
+
+            <div v-else class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center">
               You haven't submitted any adoption requests yet.
             </div>
           </div>
         </div>
 
-        <!-- 4. FAVORITES -->
         <div v-if="activeTab === 'favorites'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
           <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <Bookmark class="w-6 h-6" />
