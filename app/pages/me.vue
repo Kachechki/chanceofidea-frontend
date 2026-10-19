@@ -8,10 +8,17 @@ import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
+import { useRequestsStore } from '~/stores/requestsStore'
 
 const { user, ready } = useAuth()
+
+// Projects Store
 const projectsStore = useProjectsStore()
 const { myProjects, loading: projectsLoading, error: projectsError } = storeToRefs(projectsStore)
+
+// Requests Store (згідно з п. 11 ТЗ)[cite: 4]
+const requestsStore = useRequestsStore()
+const { incomingRequests, outgoingRequests } = storeToRefs(requestsStore)
 
 const activeTab = ref<'created' | 'adopted' | 'requests' | 'favorites'>('created')
 
@@ -20,6 +27,7 @@ watch(
   (id) => {
     if (id) {
       projectsStore.fetchMyProjects()
+      requestsStore.fetchRequests?.() // Завантаження заявок через стор
     }
   },
   { immediate: true }
@@ -28,39 +36,6 @@ watch(
 const createdProjects = computed<ProjectEntity[]>(() => myProjects.value)
 const adoptedProjects = computed<ProjectEntity[]>(() => [])
 const favoriteProjects = computed<ProjectEntity[]>(() => [])
-
-
-interface RequestItem {
-  id: string
-  createdAt: string
-  status: string
-  whyMe: string
-  actionPlan: string
-  portfolioUrl: string
-  applicant: {
-    id: string
-    name: string
-    avatar?: string
-  }
-}
-
-const incomingRequests = ref<RequestItem[]>([
-  {
-    id: 'req_1',
-    createdAt: '19.10.2026',
-    status: 'Pending',
-    whyMe: 'Маю досвід розробки на Nuxt 3 та хочу довести цей проєкт до релізу.',
-    actionPlan: '1. Оптимізувати архітектуру. 2. Додати фічі за 2-4 тижні.',
-    portfolioUrl: 'https://github.com/example-applicant',
-    applicant: {
-      id: 'user_2',
-      name: 'Олексій',
-      avatar: 'https://github.githubassets.com/favicons/favicon.svg'
-    }
-  }
-])
-
-const outgoingRequests = ref<RequestItem[]>([])
 
 const publishedCount = computed(
   () => createdProjects.value.filter((p) => p.status === ProjectStatusEnum.PUBLISHED).length
@@ -83,11 +58,11 @@ const tabClass = (tab: typeof activeTab.value) => [
 ]
 
 const handleAccept = (id: string) => {
-  console.log('Accept request:', id)
+  requestsStore.acceptRequest?.(id)
 }
 
 const handleReject = (id: string) => {
-  console.log('Reject request:', id)
+  requestsStore.rejectRequest?.(id)
 }
 
 const handleWrite = (applicantId: string) => {
@@ -97,10 +72,12 @@ const handleWrite = (applicantId: string) => {
 
 <template>
   <div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
+    <!-- Session check still running -->
     <div v-if="!ready" class="py-24 text-center text-muted-foreground">
       Loading profile...
     </div>
 
+    <!-- Not logged in -->
     <div
       v-else-if="!user"
       class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
@@ -111,6 +88,7 @@ const handleWrite = (applicantId: string) => {
     </div>
 
     <template v-else>
+      <!-- PROFILE HEADER -->
       <div class="bg-card border border-border rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
         <div class="flex items-center gap-6">
           <img
@@ -141,6 +119,7 @@ const handleWrite = (applicantId: string) => {
           </div>
         </div>
 
+        <!-- STATS BAR -->
         <div class="flex items-center gap-4 bg-muted/50 p-4 rounded-xl border border-border">
           <div class="text-center px-3">
             <div class="text-xl font-bold text-foreground">{{ publishedCount }}</div>
@@ -154,6 +133,7 @@ const handleWrite = (applicantId: string) => {
         </div>
       </div>
 
+      <!-- TABS NAVIGATION -->
       <div class="flex items-center border-b border-border gap-2">
         <button :class="tabClass('created')" @click="activeTab = 'created'">
           <Package class="w-4 h-4" /> Created Projects
@@ -184,8 +164,9 @@ const handleWrite = (applicantId: string) => {
         </button>
       </div>
 
+      <!-- TAB CONTENT -->
       <div class="min-h-[300px]">
-
+        <!-- 1. CREATED PROJECTS -->
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
           <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
           <div v-if="projectsLoading && createdProjects.length === 0" class="py-16 text-center text-muted-foreground">
@@ -228,6 +209,7 @@ const handleWrite = (applicantId: string) => {
           </div>
         </div>
 
+        <!-- 2. ADOPTED PROJECTS -->
         <div v-if="activeTab === 'adopted'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
           <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <HeartHandshake class="w-6 h-6" />
@@ -243,7 +225,9 @@ const handleWrite = (applicantId: string) => {
           </NuxtLink>
         </div>
 
+        <!-- 3. REQUESTS -->
         <div v-if="activeTab === 'requests'" class="flex flex-col gap-8">
+          <!-- INCOMING REQUESTS -->
           <div class="flex flex-col gap-4">
             <h2 class="text-md font-semibold text-foreground flex items-center gap-2">
               Incoming Requests
@@ -269,6 +253,7 @@ const handleWrite = (applicantId: string) => {
             </div>
           </div>
 
+          <!-- OUTGOING REQUESTS -->
           <div class="flex flex-col gap-4 pt-4 border-t border-border">
             <h2 class="text-md font-semibold text-foreground flex items-center gap-2">
               Outgoing Requests
@@ -292,6 +277,7 @@ const handleWrite = (applicantId: string) => {
           </div>
         </div>
 
+        <!-- 4. FAVORITES -->
         <div v-if="activeTab === 'favorites'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
           <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <Bookmark class="w-6 h-6" />
