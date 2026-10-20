@@ -15,7 +15,7 @@ import GithubLoginButton from '~/components/GithubLoginButton.vue'
 				<CardDescription>Continue to Chance of Idea</CardDescription>
 			</CardHeader>
 			<CardContent class="flex flex-col gap-6">
-				<form class="flex flex-col gap-4 opacity-50" @submit.prevent>
+				<form class="flex flex-col gap-4 opacity-50" novalidate @submit.prevent>
 					<div class="flex flex-col gap-1.5">
 						<label for="email" class="text-sm font-medium text-foreground">Email</label>
 						<Input id="email" type="email" placeholder="you@example.com" disabled />

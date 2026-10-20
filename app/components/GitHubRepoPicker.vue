@@ -1,77 +1,125 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useProjectsStore } from '~/stores/projectsStore'
+import { parseRepoInput } from '~/lib/validation'
+import FieldError from '~/components/FieldError.vue'
+import LoadingSpinner from '~/components/LoadingSpinner.vue'
+
+// the model is the repo name (select mode) or whatever was typed (manual mode).
+// the form normalizes it on submit with parseRepoInput.
+const model = defineModel<string>({ default: '' })
 
 const props = defineProps<{
-    modelValue?: string
-    repositories?: Array<{ id: string | number; name: string; html_url?: string }>
+	id?: string
+	error?: string
 }>()
 
-const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void
-}>()
+const projectsStore = useProjectsStore()
+const { githubRepos, githubReposLoading, githubReposError } = storeToRefs(projectsStore)
 
-const selectedMode = ref<'select' | 'manual'>('select')
-const manualUrl = ref(props.modelValue ?? '')
+const mode = ref<'select' | 'manual'>('select')
 
-const handleSelectChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement
-    emit('update:modelValue', target.value)
+onMounted(() => projectsStore.fetchGithubRepos())
+
+// no public repos or a failed load, so fall back to manual entry
+watch(
+	[githubRepos, githubReposLoading, githubReposError],
+	([repos, loading, failed]) => {
+		if (!loading && (repos.length === 0 || failed)) mode.value = 'manual'
+	}
+)
+
+// a pasted github url becomes owner/repo right away
+const onPaste = (event: ClipboardEvent) => {
+	const text = event.clipboardData?.getData('text') ?? ''
+	const parsed = parseRepoInput(text)
+	if (!parsed?.owner) return
+	event.preventDefault()
+	model.value = `${parsed.owner}/${parsed.name}`
 }
 
-const handleManualInput = () => {
-    emit('update:modelValue', manualUrl.value)
-}
+const fieldClass =
+	'w-full px-3 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
 </script>
 
 <template>
-    <div class="space-y-3">
-        <div class="flex items-center gap-4 text-sm">
-            <button
-                type="button"
-                :class="[
-                    'pb-1 font-medium border-b-2 transition-colors cursor-pointer',
-                    selectedMode === 'select' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'
-                ]"
-                @click="selectedMode = 'select'"
-            >
-                Select repository
-            </button>
-            <button
-                type="button"
-                :class="[
-                    'pb-1 font-medium border-b-2 transition-colors cursor-pointer',
-                    selectedMode === 'manual' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'
-                ]"
-                @click="selectedMode = 'manual'"
-            >
-                Enter manually
-            </button>
-        </div>
+	<div class="space-y-3">
+		<div class="flex items-center gap-4 text-sm" role="group" aria-label="Repository input mode">
+			<button
+				type="button"
+				:aria-pressed="mode === 'select'"
+				:class="[
+					'pb-1 font-medium border-b-2 transition-colors cursor-pointer',
+					mode === 'select' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground',
+				]"
+				@click="mode = 'select'"
+			>
+				Select repository
+			</button>
+			<button
+				type="button"
+				:aria-pressed="mode === 'manual'"
+				:class="[
+					'pb-1 font-medium border-b-2 transition-colors cursor-pointer',
+					mode === 'manual' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground',
+				]"
+				@click="mode = 'manual'"
+			>
+				Enter manually
+			</button>
+		</div>
 
-        <div v-if="selectedMode === 'select'">
-            <select
-                class="w-full px-3 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                @change="handleSelectChange"
-            >
-                <option value="" disabled selected>Select a public repository</option>
-                <option
-                    v-for="repo in repositories"
-                    :key="repo.id"
-                    :value="repo.name"
-                >
-                    {{ repo.name }}
-                </option>
-            </select>
-        </div>
+		<div v-if="mode === 'select'">
+			<LoadingSpinner
+				v-if="githubReposLoading"
+				compact
+				size="w-5 h-5"
+			/>
+			<p
+				v-else-if="githubReposError"
+				role="alert"
+				class="text-sm text-destructive"
+			>
+				{{ githubReposError }}. You can still enter the repository manually.
+			</p>
+			<select
+				v-else
+				:id="id"
+				v-model="model"
+				:class="fieldClass"
+				:aria-invalid="!!error"
+				:aria-describedby="error ? `${id}-error` : undefined"
+			>
+				<option value="" disabled>Select one of your public repositories</option>
+				<option
+					v-for="repo in githubRepos"
+					:key="repo.id"
+					:value="repo.name"
+				>
+					{{ repo.name }}
+				</option>
+			</select>
+		</div>
 
-        <div v-else>
-            <input
-                type="text"
-                v-model="manualUrl"
-                @input="handleManualInput"
-                placeholder="e.g. owner/repository or full URL"
-                class="w-full px-3 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-        </div>
-    </div>
+		<div v-else>
+			<input
+				:id="id"
+				v-model="model"
+				type="text"
+				autocomplete="off"
+				spellcheck="false"
+				placeholder="owner/repository or https://github.com/owner/repository"
+				:class="fieldClass"
+				:aria-invalid="!!error"
+				:aria-describedby="error ? `${id}-error` : undefined"
+				@paste="onPaste"
+			/>
+		</div>
+
+		<FieldError
+			:id="`${id}-error`"
+			:message="error"
+		/>
+	</div>
 </template>

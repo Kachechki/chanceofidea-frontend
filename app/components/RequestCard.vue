@@ -52,7 +52,7 @@ const getStatusBadgeClass = (status: string) => {
                     />
                     <div class="flex flex-col">
                         <span class="font-semibold text-sm text-foreground">{{ request.applicant.name }}</span>
-                        <span class="text-xs text-muted-foreground font-mono">Подано: {{ request.createdAt }}</span>
+                        <span class="text-xs text-muted-foreground font-mono">Submitted: {{ request.createdAt }}</span>
                     </div>
                 </div>
 
@@ -66,12 +66,12 @@ const getStatusBadgeClass = (status: string) => {
 
             <div class="flex flex-col gap-3 text-sm">
                 <div>
-                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Чому саме ви?</span>
+                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you?</span>
                     <p class="mt-1 text-foreground leading-relaxed">{{ request.whyMe }}</p>
                 </div>
 
                 <div>
-                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">План дій (2-4 тижні)</span>
+                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action plan (2-4 weeks)</span>
                     <p class="mt-1 text-foreground leading-relaxed">{{ request.actionPlan }}</p>
                 </div>
 

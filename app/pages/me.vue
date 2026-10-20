@@ -5,10 +5,10 @@ import {
   Package, HeartHandshake, Bookmark, FileText, Plus, Globe
 } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
-import { Card, CardContent } from '~/widgets/ui/card'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
+import { LIMITS, validateText } from '~/lib/validation'
 
 const { user, ready } = useAuth()
 
@@ -57,7 +57,7 @@ const tabClass = (tab: typeof activeTab.value) => [
     : 'border-transparent text-muted-foreground hover:text-foreground',
 ]
 
-// accepting starts the GitHub transfer, so ask first
+// accepting starts the github transfer, so ask first
 const handleAccept = async (id: string) => {
   if (!window.confirm('Accept this applicant? The repository will be transferred to them on GitHub.')) return
   try {
@@ -70,10 +70,18 @@ const handleAccept = async (id: string) => {
 }
 
 const handleReject = async (id: string) => {
-  const reason = window.prompt('Reason shown to the applicant:')
-  if (!reason || !reason.trim()) return
+  const input = window.prompt('Reason shown to the applicant:')
+  if (input === null) return
+
+  const reason = input.trim()
+  const reasonError = validateText(reason, 'Reason', LIMITS.rejectReason)
+  if (reasonError) {
+    requestsStore.error = reasonError
+    return
+  }
+
   try {
-    await requestsStore.rejectRequest(id, reason.trim())
+    await requestsStore.rejectRequest(id, reason)
   } catch {
     // the store keeps the message in `error`
   }
@@ -220,24 +228,11 @@ const handleWrite = (applicantId: string) => {
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
           <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
           <LoadingSpinner v-if="projectsLoading && createdProjects.length === 0" />
-          <div v-else-if="createdProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card v-for="project in createdProjects" :key="project.id" class="p-6 flex flex-col justify-between gap-4">
-              <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-lg text-foreground">{{ project.title }}</h3>
-                  <span class="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground font-mono">
-                    {{ project.status }}
-                  </span>
-                </div>
-                <p class="text-sm text-muted-foreground line-clamp-2">{{ project.description }}</p>
-              </div>
-              <div class="flex flex-wrap gap-1.5 pt-4 border-t border-border">
-                <span v-for="tag in project.tags" :key="tag.id" class="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded">
-                  {{ tag.name }}
-                </span>
-              </div>
-            </Card>
-          </div>
+          <ul v-else-if="createdProjects.length > 0" aria-label="Created projects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <li v-for="project in createdProjects" :key="project.id">
+              <ProjectCard :project="project" />
+            </li>
+          </ul>
 
           <div v-else class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
             <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">

@@ -64,7 +64,10 @@
           @input="emitUpdate"
           placeholder="https://figma.com/file/..."
           class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-transparent text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          :aria-invalid="!!errors?.figmaUrl"
+          :aria-describedby="errors?.figmaUrl ? 'media-figma-error' : undefined"
         />
+        <FieldError id="media-figma-error" :message="errors?.figmaUrl" />
       </div>
 
       <div>
@@ -78,7 +81,10 @@
           @input="emitUpdate"
           placeholder="https://youtube.com/watch?v=..."
           class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-transparent text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          :aria-invalid="!!errors?.demoUrl"
+          :aria-describedby="errors?.demoUrl ? 'media-demo-error' : undefined"
         />
+        <FieldError id="media-demo-error" :message="errors?.demoUrl" />
       </div>
     </div>
   </div>
@@ -86,6 +92,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import FieldError from '~/components/FieldError.vue'
 
 interface MediaData {
   files: File[]
@@ -95,6 +102,7 @@ interface MediaData {
 
 const props = defineProps<{
   modelValue?: MediaData
+  errors?: { figmaUrl?: string; demoUrl?: string }
 }>()
 
 const emit = defineEmits<{

@@ -109,7 +109,7 @@ const { user, ready } = useAuth()
 				<div>
 					<h2 class="text-lg font-semibold text-foreground">For authors</h2>
 					<p class="text-muted-foreground">
-						Pass your project to someone who will finish it and credit it work.
+						Pass your project to someone who will finish it and get credit for the work you started.
 					</p>
 				</div>
 				<div
@@ -146,7 +146,7 @@ const { user, ready } = useAuth()
 					<div>
 						<h3 class="font-semibold text-foreground">Approve adopters</h3>
 						<p class="text-muted-foreground text-sm">
-							Review candidates or let the ocmmunity pick the best fit.
+							Review candidates or let the community pick the best fit.
 						</p>
 					</div>
 				</li>

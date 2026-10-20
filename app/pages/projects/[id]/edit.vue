@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { Button } from '~/widgets/ui/button'
@@ -13,7 +13,17 @@ import {
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
 import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
-import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
+import FieldError from '~/components/FieldError.vue'
+import { errorMessage } from '~/lib/errors'
+import { getProjectFullName } from '~/lib/project'
+import {
+    LIMITS,
+    focusFirstInvalid,
+    hasErrors,
+    validateProjectForm,
+    type ProjectFormErrors,
+    type ProjectFormValues,
+} from '~/lib/validation'
 
 const route = useRoute()
 const projectId = route.params.id as string
@@ -21,13 +31,12 @@ const projectId = route.params.id as string
 const { user, ready } = useAuth()
 
 useHead({ title: 'Edit Project' })
+
 const projectsStore = useProjectsStore()
-const { currentProject, selectableCategories, tags, loading, error } =
-    storeToRefs(projectsStore)
+const { currentProject, selectableCategories, tags, loading } = storeToRefs(projectsStore)
 
 const form = reactive({
     title: '',
-    repositoryName: '',
     description: '',
     categoryId: '',
     tags: [] as string[],
@@ -38,7 +47,32 @@ const form = reactive({
         demoUrl: '',
     },
 })
-const formError = ref('')
+
+const errors = ref<ProjectFormErrors>({})
+const attempted = ref(false)
+const serverError = ref('')
+
+// the repository cannot change after publishing, so it is not part of the edit form
+const repositoryName = computed(() =>
+    currentProject.value ? getProjectFullName(currentProject.value) : ''
+)
+
+const values = computed<ProjectFormValues>(() => ({
+    title: form.title,
+    description: form.description,
+    categoryId: form.categoryId,
+    tags: form.tags,
+    figmaUrl: form.media.figmaUrl,
+    demoUrl: form.media.demoUrl,
+}))
+
+watch(
+    values,
+    () => {
+        if (attempted.value) errors.value = validateProjectForm(values.value)
+    },
+    { deep: true }
+)
 
 onMounted(async () => {
     await Promise.all([
@@ -50,7 +84,6 @@ onMounted(async () => {
     if (currentProject.value) {
         form.title = currentProject.value.title
         form.description = currentProject.value.description
-        form.repositoryName = currentProject.value.repositoryName || ''
         form.categoryId = currentProject.value.category?.id || ''
         form.tags = currentProject.value.tags?.map((t) => t.id) || []
         form.readinessPercent = Math.round((currentProject.value.readiness || 0.5) * 100)
@@ -63,34 +96,33 @@ const toggleTag = (id: string) => {
         : [...form.tags, id]
 }
 
-const validate = () => {
-    if (!form.title.trim()) return 'Title is required'
-    if (!form.repositoryName.trim()) return 'Repository name is required'
-    if (!form.description.trim()) return 'Description is required'
-    if (!form.categoryId) return 'Pick a category'
-    return ''
-}
-
 const submit = async () => {
-    formError.value = validate()
-    if (formError.value) return
+    if (loading.value) return
 
+    attempted.value = true
+    errors.value = validateProjectForm(values.value)
+    if (hasErrors(errors.value)) {
+        await nextTick()
+        focusFirstInvalid()
+        return
+    }
+
+    serverError.value = ''
     try {
-        await $fetch(`/api/project`, {
+        await $fetch('/api/project', {
             method: 'PATCH',
             body: {
                 id: projectId,
                 title: form.title.trim(),
                 description: form.description.trim(),
-                repositoryName: form.repositoryName.trim(),
                 categoryId: form.categoryId,
                 tags: form.tags,
                 readiness: form.readinessPercent / 100,
             },
         })
         await navigateTo(`/projects/${projectId}`)
-    } catch (err: any) {
-        formError.value = err?.data?.message || 'Failed to update project'
+    } catch (err) {
+        serverError.value = errorMessage(err, 'Failed to update project')
     }
 }
 
@@ -107,12 +139,18 @@ const fieldClass =
             class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
         >
             <h2 class="font-semibold text-lg text-foreground">Log in to edit project</h2>
-            <Button as-child class="mt-2">
+            <Button
+                as-child
+                class="mt-2"
+            >
                 <NuxtLink to="/login">Log in</NuxtLink>
             </Button>
         </div>
 
-        <Card v-else class="rounded-2xl">
+        <Card
+            v-else
+            class="rounded-2xl"
+        >
             <CardHeader>
                 <CardTitle class="text-2xl">Edit project</CardTitle>
                 <CardDescription>
@@ -120,31 +158,77 @@ const fieldClass =
                 </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
-                <form class="flex flex-col gap-5" @submit.prevent>
+                <form
+                    class="flex flex-col gap-5"
+                    novalidate
+                    @submit.prevent
+                >
                     <div class="flex flex-col gap-1.5">
-                        <label for="title" class="text-sm font-medium text-foreground">Title</label>
-                        <Input id="title" v-model="form.title" />
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-sm font-medium text-foreground">Repository</label>
-                        <GitHubRepoPicker v-model="form.repositoryName" />
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label for="description" class="text-sm font-medium text-foreground">Description</label>
-                        <textarea
-                            id="description"
-                            v-model="form.description"
-                            rows="4"
-                            :class="fieldClass"
+                        <label
+                            for="title"
+                            class="text-sm font-medium text-foreground"
+                        >Title</label>
+                        <Input
+                            id="title"
+                            v-model="form.title"
+                            :maxlength="LIMITS.title"
+                            :aria-invalid="!!errors.title"
+                            :aria-describedby="errors.title ? 'title-error' : undefined"
+                        />
+                        <FieldError
+                            id="title-error"
+                            :message="errors.title"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="category" class="text-sm font-medium text-foreground">Category</label>
-                        <select id="category" v-model="form.categoryId" :class="fieldClass">
-                            <option value="" disabled>Select a category</option>
+                        <span class="text-sm font-medium text-foreground">Repository</span>
+                        <p class="text-sm font-mono text-muted-foreground break-all">
+                            {{ repositoryName || 'Unknown repository' }}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                            The repository is fixed once a project is published.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <label
+                            for="description"
+                            class="text-sm font-medium text-foreground"
+                        >Description</label>
+                        <textarea
+                            id="description"
+                            v-model="form.description"
+                            rows="4"
+                            :maxlength="LIMITS.description"
+                            :class="fieldClass"
+                            :aria-invalid="!!errors.description"
+                            :aria-describedby="errors.description ? 'description-error' : undefined"
+                        />
+                        <FieldError
+                            id="description-error"
+                            :message="errors.description"
+                        />
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <label
+                            for="category"
+                            class="text-sm font-medium text-foreground"
+                        >Category</label>
+                        <select
+                            id="category"
+                            v-model="form.categoryId"
+                            :class="fieldClass"
+                            :aria-invalid="!!errors.categoryId"
+                            :aria-describedby="errors.categoryId ? 'category-error' : undefined"
+                        >
+                            <option
+                                value=""
+                                disabled
+                            >
+                                Select a category
+                            </option>
                             <option
                                 v-for="cat in selectableCategories"
                                 :key="cat.id"
@@ -153,31 +237,49 @@ const fieldClass =
                                 {{ cat.name }}
                             </option>
                         </select>
+                        <FieldError
+                            id="category-error"
+                            :message="errors.categoryId"
+                        />
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <span id="edit-tags-label" class="text-sm font-medium text-foreground">Tags</span>
-                        <div class="flex flex-wrap gap-2" role="group" aria-labelledby="edit-tags-label">
+                        <span
+                            id="edit-tags-label"
+                            class="text-sm font-medium text-foreground"
+                        >Tags</span>
+                        <div
+                            class="flex flex-wrap gap-2"
+                            role="group"
+                            aria-labelledby="edit-tags-label"
+                        >
                             <button
                                 v-for="tag in tags"
                                 :key="tag.id"
                                 type="button"
                                 :aria-pressed="form.tags.includes(tag.id)"
-                                @click="toggleTag(tag.id)"
                                 :class="[
                                     'px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer',
                                     form.tags.includes(tag.id)
                                         ? 'bg-accent text-accent-foreground border-primary font-semibold'
                                         : 'bg-background text-muted-foreground border-border hover:border-muted-foreground',
                                 ]"
+                                @click="toggleTag(tag.id)"
                             >
                                 {{ tag.name }}
                             </button>
                         </div>
+                        <FieldError
+                            id="tags-error"
+                            :message="errors.tags"
+                        />
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="readiness" class="text-sm font-medium text-foreground">
+                        <label
+                            for="readiness"
+                            class="text-sm font-medium text-foreground"
+                        >
                             Readiness: {{ form.readinessPercent }}%
                         </label>
                         <input
@@ -191,16 +293,29 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-1.5 pt-2 border-t border-border">
-                        <span id="edit-media-label" class="text-sm font-medium text-foreground mb-1">
-                            Media & External Links
+                        <span
+                            id="edit-media-label"
+                            class="text-sm font-medium text-foreground mb-1"
+                        >
+                            Media &amp; External Links
                         </span>
-                        <div role="group" aria-labelledby="edit-media-label">
-                            <ProjectMediaUpload v-model="form.media" />
+                        <div
+                            role="group"
+                            aria-labelledby="edit-media-label"
+                        >
+                            <ProjectMediaUpload
+                                v-model="form.media"
+                                :errors="{ figmaUrl: errors.figmaUrl, demoUrl: errors.demoUrl }"
+                            />
                         </div>
                     </div>
 
-                    <p v-if="formError || error" role="alert" class="text-sm text-destructive">
-                        {{ formError || error }}
+                    <p
+                        v-if="serverError"
+                        role="alert"
+                        class="text-sm text-destructive"
+                    >
+                        {{ serverError }}
                     </p>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
@@ -210,7 +325,11 @@ const fieldClass =
                         >
                             <NuxtLink :to="`/projects/${projectId}`">Cancel</NuxtLink>
                         </Button>
-                        <Button type="button" @click="submit">
+                        <Button
+                            type="button"
+                            :disabled="loading"
+                            @click="submit"
+                        >
                             Save changes
                         </Button>
                     </div>

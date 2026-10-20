@@ -5,6 +5,7 @@ import { ALL_CATEGORY_ID, type CategoryEntity } from '~/types/category'
 import type { TagEntity } from '~/types/tag'
 import { getProjectFullName } from '~/lib/project'
 import { errorMessage } from '~/lib/errors'
+import type { GithubRepository } from '~/types/github'
 
 export type ProjectSort = 'newest' | 'readiness' | 'name'
 
@@ -25,6 +26,10 @@ export const useProjectsStore = defineStore('projects', {
 		currentProject: null as ProjectEntity | null,
 		categories: [] as CategoryEntity[],
 		tags: [] as TagEntity[],
+		// public repos owned by the logged-in user (repo picker)
+		githubRepos: [] as GithubRepository[],
+		githubReposLoading: false,
+		githubReposError: null as string | null,
 
 		searchQuery: '',
 		selectedCategoryId: ALL_CATEGORY_ID,
@@ -179,6 +184,28 @@ export const useProjectsStore = defineStore('projects', {
 			}
 			await this.fetchMyProjects()
 			if (input.publish) await this.fetchProjects()
+		},
+
+		// the backend lists repos for the logged-in user; only public ones can be published
+		async fetchGithubRepos() {
+			this.githubReposLoading = true
+			this.githubReposError = null
+			try {
+				const repos = await $fetch<GithubRepository[]>(
+					'/api/github/repositories'
+				)
+				this.githubRepos = repos
+					.filter((repo) => !repo.private)
+					.sort((a, b) => a.name.localeCompare(b.name))
+			} catch (err) {
+				this.githubRepos = []
+				this.githubReposError = errorMessage(
+					err,
+					'Failed to load your repositories'
+				)
+			} finally {
+				this.githubReposLoading = false
+			}
 		},
 
 		async fetchCategories() {
