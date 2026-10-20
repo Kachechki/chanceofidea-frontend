@@ -28,7 +28,7 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="max-w-md mx-auto px-8 py-24 flex flex-col items-center gap-6 text-center">
+	<div class="max-w-md mx-auto px-4 md:px-8 py-24 flex flex-col items-center gap-6 text-center">
 		<template v-if="error">
 			<p role="alert" class="text-destructive font-medium">{{ error }}</p>
 			<Button as-child variant="outline">

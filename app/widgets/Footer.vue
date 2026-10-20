@@ -3,7 +3,7 @@
 
 <template>
   <footer class="w-full border-t border-border bg-card mt-auto">
-    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
 
       <div class="flex flex-col gap-2 max-w-sm">
         <p class="font-bold text-lg text-foreground flex items-center gap-2">

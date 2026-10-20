@@ -90,7 +90,7 @@ watch(
 </script>
 
 <template>
-	<div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
+	<div class="max-w-7xl mx-auto px-4 md:px-8 py-10 flex flex-col gap-8">
 		<div class="flex flex-col gap-2">
 			<h1 class="text-3xl font-bold text-foreground">Project Catalog</h1>
 			<p class="text-muted-foreground text-sm">

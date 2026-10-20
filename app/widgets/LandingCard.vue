@@ -33,7 +33,7 @@ const formatted = computed(() => displayed.value.toLocaleString('en-US'))
 
 <template>
   <Card class="rounded-2xl shadow-none">
-    <CardContent class="flex items-center gap-5 p-8">
+    <CardContent class="flex items-center gap-5 p-5 md:p-8">
       <div
           class="flex size-20 shrink-0 items-center justify-center rounded-full bg-[--color-chart-1]"
       >

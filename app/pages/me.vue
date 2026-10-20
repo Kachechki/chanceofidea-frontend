@@ -51,7 +51,7 @@ const joinedDate = computed(() => {
 })
 
 const tabClass = (tab: typeof activeTab.value) => [
-  'px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-2',
+	'px-3 md:px-5 py-3 whitespace-nowrap shrink-0 font-medium text-sm transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-2',
   activeTab.value === tab
     ? 'border-primary text-primary font-semibold'
     : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -93,7 +93,7 @@ const handleWrite = (applicantId: string) => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 py-10 flex flex-col gap-8">
     <LoadingSpinner v-if="!ready" />
 
 
@@ -109,7 +109,7 @@ const handleWrite = (applicantId: string) => {
     </div>
 
     <template v-else>
-      <div class="bg-card border border-border rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+      <div class="bg-card border border-border rounded-2xl p-5 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
         <div class="flex items-center gap-6">
           <img
             :src="user.avatarUrl"
@@ -153,7 +153,7 @@ const handleWrite = (applicantId: string) => {
         </div>
       </div>
 
-      <div role="tablist" aria-label="Profile sections" class="flex items-center border-b border-border gap-2">
+      <div role="tablist" aria-label="Profile sections" class="flex items-center border-b border-border gap-2 overflow-x-auto">
         <button
           id="tab-created"
           type="button"

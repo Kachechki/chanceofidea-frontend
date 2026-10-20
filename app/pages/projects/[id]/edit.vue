@@ -131,7 +131,7 @@ const fieldClass =
 </script>
 
 <template>
-    <div class="max-w-3xl mx-auto px-8 py-10">
+    <div class="max-w-3xl mx-auto px-4 md:px-8 py-10">
         <LoadingSpinner v-if="!ready || loading" />
 
         <div

@@ -8,7 +8,7 @@ import GithubLoginButton from '~/components/GithubLoginButton.vue'
 </script>
 
 <template>
-	<div class="max-w-md mx-auto px-8 py-16">
+	<div class="max-w-md mx-auto px-4 md:px-8 py-16">
 		<Card class="rounded-2xl">
 			<CardHeader class="text-center">
 				<CardTitle class="text-2xl">Log in</CardTitle>

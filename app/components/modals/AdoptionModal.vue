@@ -9,7 +9,7 @@
       aria-modal="true"
       aria-labelledby="adoption-title"
       tabindex="-1"
-      class="w-full max-w-lg rounded-xl bg-card text-card-foreground p-6 shadow-xl border border-border focus:outline-none"
+      class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-card text-card-foreground p-5 md:p-6 shadow-xl border border-border focus:outline-none"
       @keydown.esc="emit('close')"
     >
       <div class="flex items-center justify-between pb-4 border-b border-border">

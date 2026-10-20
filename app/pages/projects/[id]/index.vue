@@ -174,11 +174,11 @@ onMounted(async () => {
 
 	<div
 		v-else
-		class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8"
+		class="max-w-7xl mx-auto px-4 md:px-8 py-10 flex flex-col gap-8"
 	>
 		<!-- HERO -->
 		<section
-			class="relative overflow-hidden bg-card border border-border rounded-2xl p-8 shadow-sm"
+			class="relative overflow-hidden bg-card border border-border rounded-2xl p-5 md:p-8 shadow-sm"
 		>
 			<div
 				class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/20 blur-3xl"
@@ -205,7 +205,7 @@ onMounted(async () => {
 					</div>
 
 					<h1
-						class="text-4xl font-bold text-foreground tracking-tight break-words"
+						class="text-3xl md:text-4xl font-bold text-foreground tracking-tight break-words"
 					>
 						{{ project.title }}
 					</h1>
@@ -256,7 +256,7 @@ onMounted(async () => {
 			<!-- MAIN COLUMN -->
 			<div class="lg:col-span-2 flex flex-col gap-6">
 				<Card class="rounded-2xl p-0">
-					<CardContent class="p-8 flex flex-col gap-4">
+					<CardContent class="p-5 md:p-8 flex flex-col gap-4">
 						<h2 class="text-lg font-semibold text-foreground">About</h2>
 						<p
 							class="text-muted-foreground leading-relaxed whitespace-pre-line"
@@ -267,7 +267,7 @@ onMounted(async () => {
 				</Card>
 
 				<Card class="rounded-2xl p-0">
-					<CardContent class="p-8 flex flex-col gap-4">
+					<CardContent class="p-5 md:p-8 flex flex-col gap-4">
 						<h2
 							class="flex items-center gap-2 text-lg font-semibold text-foreground"
 						>
