@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 		componentDir: 'src/widgets/ui',
 	},
 	runtimeConfig: {
-		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000', // override with NUXT_BACKEND_URL
+		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000', 
 		public: {
 			githubClientId:
 				process.env.NUXT_PUBLIC_GITHUB_CLIENT_ID || 'Iv23liABRK4YkqMNZDM8',
