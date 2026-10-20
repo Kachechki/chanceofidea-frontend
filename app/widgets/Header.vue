@@ -9,9 +9,12 @@ const route = useRoute()
 const menuOpen = ref(false)
 
 // close the mobile menu after navigating
-watch(() => route.fullPath, () => {
-	menuOpen.value = false
-})
+watch(
+	() => route.fullPath,
+	() => {
+		menuOpen.value = false
+	}
+)
 </script>
 
 <template>
@@ -26,9 +29,9 @@ watch(() => route.fullPath, () => {
 					class="flex items-center gap-2 rounded-sm"
 				>
 					<Lightbulb
+						style="stroke-width: 2px !important"
 						class="w-[22px] h-[22px] text-primary shrink-0"
 						aria-hidden="true"
-						:stroke-width="5"
 					/>
 					<span class="text-lg font-bold text-foreground whitespace-nowrap">
 						Chance of Idea
