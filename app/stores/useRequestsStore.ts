@@ -9,7 +9,10 @@ import {
 } from '~/types/application'
 import type { AdoptionRequestEntity } from '~/components/RequestCard.vue'
 
-const STATUS_LABEL: Record<ApplicationStatusEnum, AdoptionRequestEntity['status']> = {
+const STATUS_LABEL: Record<
+	ApplicationStatusEnum,
+	AdoptionRequestEntity['status']
+> = {
 	[ApplicationStatusEnum.PENDING]: 'Pending',
 	[ApplicationStatusEnum.ACCEPTED]: 'Accepted',
 	[ApplicationStatusEnum.REJECTED]: 'Rejected',
@@ -73,7 +76,9 @@ export const useRequestsStore = defineStore('requests', {
 			this.loading = true
 			this.error = null
 			try {
-				this.incoming = await $fetch<ApplicationEntity[]>('/api/application/incoming')
+				this.incoming = await $fetch<ApplicationEntity[]>(
+					'/api/application/incoming'
+				)
 			} catch (err) {
 				this.incoming = []
 				this.error = errorMessage(err, 'Failed to load incoming applications')
@@ -86,7 +91,9 @@ export const useRequestsStore = defineStore('requests', {
 			this.loading = true
 			this.error = null
 			try {
-				this.outgoing = await $fetch<ApplicationEntity[]>('/api/application/outgoing')
+				this.outgoing = await $fetch<ApplicationEntity[]>(
+					'/api/application/outcoming'
+				)
 			} catch (err) {
 				this.outgoing = []
 				this.error = errorMessage(err, 'Failed to load your applications')
@@ -122,7 +129,10 @@ export const useRequestsStore = defineStore('requests', {
 
 			this.error = null
 			try {
-				await $fetch('/api/application/accept', { method: 'POST', query: { id } })
+				await $fetch('/api/application/accept', {
+					method: 'POST',
+					query: { id },
+				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to accept application')
 				throw err
