@@ -7,6 +7,8 @@ import { Button } from '~/widgets/ui/button'
 import { ALL_CATEGORY_ID } from '~/types/category'
 import type { ProjectSort } from '~/stores/projectsStore'
 
+useHead({ title: 'Project Catalog' })
+
 const route = useRoute()
 const router = useRouter()
 const projectsStore = useProjectsStore()
@@ -106,7 +108,8 @@ watch(
 				/>
 				<input
 					v-model="searchQuery"
-					type="text"
+					type="search"
+					aria-label="Search projects"
 					placeholder="Search loaded projects by title, description or tag..."
 					class="w-full pl-9 pr-4 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
 				/>
@@ -115,6 +118,7 @@ watch(
 			<div class="flex items-center gap-3 w-full md:w-auto justify-end">
 				<select
 					v-model="selectedSort"
+					aria-label="Sort projects"
 					class="px-3 py-2 text-sm bg-background border border-input rounded-md text-foreground focus:outline-none"
 				>
 					<option value="newest">Sort: Newest</option>
@@ -124,16 +128,19 @@ watch(
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-3">
+		<div class="flex flex-col gap-3" role="group" aria-labelledby="filter-categories">
 			<div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
 				<span
+					id="filter-categories"
 					class="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1"
 				>
-					<Folder class="w-3.5 h-3.5" /> Categories:
+					<Folder class="w-3.5 h-3.5" aria-hidden="true" /> Categories:
 				</span>
 				<button
 					v-for="cat in categories"
 					:key="cat.id"
+					type="button"
+					:aria-pressed="selectedCategoryId === cat.id"
 					@click="setCategory(cat.id)"
 					:class="[
 						'px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer border',
@@ -147,16 +154,19 @@ watch(
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-3 -mt-6">
+		<div class="flex flex-col gap-3 -mt-6" role="group" aria-labelledby="filter-tags">
 			<div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
 				<span
+					id="filter-tags"
 					class="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1"
 				>
-					<Tag class="w-3.5 h-3.5" /> Tags:
+					<Tag class="w-3.5 h-3.5" aria-hidden="true" /> Tags:
 				</span>
 				<button
 					v-for="tag in tags"
 					:key="tag.id"
+					type="button"
+					:aria-pressed="selectedTagIds.includes(tag.id)"
 					@click="toggleTag(tag.id)"
 					:class="[
 						'px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer border',
@@ -173,21 +183,25 @@ watch(
 		<div class="min-h-[400px]">
 			<p
 				v-if="error"
+				role="alert"
 				class="mb-4 text-sm text-destructive"
 			>
 				{{ error }}
 			</p>
 
-			<div
+			<p role="status" aria-live="polite" class="sr-only">
+				{{ filteredProjects.length }} projects found
+			</p>
+
+			<ul
 				v-if="filteredProjects.length > 0"
+				aria-label="Projects"
 				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 			>
-				<ProjectCard
-					v-for="project in filteredProjects"
-					:key="project.id"
-					:project="project"
-				/>
-			</div>
+				<li v-for="project in filteredProjects" :key="project.id">
+					<ProjectCard :project="project" />
+				</li>
+			</ul>
 
 			<LoadingSpinner v-else-if="loading" />
 

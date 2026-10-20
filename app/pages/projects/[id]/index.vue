@@ -30,6 +30,10 @@ const loading = ref(true)
 const showAdoption = ref(false)
 const project = computed(() => projectsStore.currentProject)
 
+useHead({
+	title: computed(() => project.value?.title ?? 'Project'),
+})
+
 // Load my applications so the button can show whether I already applied
 watch(
 	() => user.value?.id,
@@ -163,9 +167,9 @@ onMounted(async () => {
 		<p class="text-sm text-center text-destructive">
 			{{ error || 'Project not found' }}
 		</p>
-		<NuxtLink to="/projects">
-			<Button variant="outline">Back to catalog</Button>
-		</NuxtLink>
+		<Button as-child variant="outline">
+			<NuxtLink to="/projects">Back to catalog</NuxtLink>
+		</Button>
 	</div>
 
 	<div
@@ -221,28 +225,28 @@ onMounted(async () => {
 						<HeartHandshake class="w-4 h-4" />
 						{{ applyState.label }}
 					</Button>
-					<NuxtLink
+					<Button
 						v-if="isOwner"
-						:to="`/projects/${project.id}/edit`"
+						as-child
+						variant="outline"
+						class="gap-2"
 					>
-						<Button
-							variant="outline"
-							class="gap-2"
-						>
-							<Pencil class="w-4 h-4" />
+						<NuxtLink :to="`/projects/${project.id}/edit`">
+							<Pencil class="w-4 h-4" aria-hidden="true" />
 							Edit project
-						</Button>
-					</NuxtLink>
-					<a
-						:href="repoUrl"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						<Button class="gap-2">
-							<ExternalLink class="w-4 h-4" />
+						</NuxtLink>
+					</Button>
+					<Button as-child class="gap-2">
+						<a
+							:href="repoUrl"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<ExternalLink class="w-4 h-4" aria-hidden="true" />
 							Open repository
-						</Button>
-					</a>
+							<span class="sr-only">(opens in a new tab)</span>
+						</a>
+					</Button>
 				</div>
 			</div>
 		</section>
@@ -359,7 +363,7 @@ onMounted(async () => {
 							<img
 								v-if="project.owner?.avatarUrl"
 								:src="project.owner.avatarUrl"
-								:alt="project.owner.login"
+								alt=""
 								class="w-12 h-12 rounded-full border border-border object-cover bg-secondary shrink-0"
 							/>
 							<div
@@ -387,19 +391,21 @@ onMounted(async () => {
 						<p class="text-sm font-mono text-muted-foreground break-all">
 							{{ fullName }}
 						</p>
-						<a
-							:href="repoUrl"
-							target="_blank"
-							rel="noopener noreferrer"
+						<Button
+							as-child
+							variant="outline"
+							class="w-full gap-2"
 						>
-							<Button
-								variant="outline"
-								class="w-full gap-2"
+							<a
+								:href="repoUrl"
+								target="_blank"
+								rel="noopener noreferrer"
 							>
-								<ExternalLink class="w-4 h-4" />
+								<ExternalLink class="w-4 h-4" aria-hidden="true" />
 								View on GitHub
-							</Button>
-						</a>
+								<span class="sr-only">(opens in a new tab)</span>
+							</a>
+						</Button>
 					</CardContent>
 				</Card>
 			</aside>

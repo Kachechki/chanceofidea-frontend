@@ -9,64 +9,68 @@ const { user, logout } = useAuth()
 	<header
 		class="flex items-center justify-between gap-6 px-8 py-4 bg-background border-b border-border"
 	>
-		<div class="flex items-center gap-3 min-w-0">
-			<Lightbulb
-				class="w-[22px] h-[22px] text-primary shrink-0"
-				:troke-width="5"
-			/>
-			<button
-				type="button"
-				@click="navigateTo('/')"
+		<nav
+			aria-label="Main"
+			class="flex items-center gap-3 min-w-0"
+		>
+			<NuxtLink
+				to="/"
+				class="flex items-center gap-2 rounded-sm"
 			>
-				<h1 class="text-lg font-bold text-foreground whitespace-nowrap m-0">
+				<Lightbulb
+					class="w-[22px] h-[22px] text-primary shrink-0"
+					aria-hidden="true"
+					:stroke-width="5"
+				/>
+				<span class="text-lg font-bold text-foreground whitespace-nowrap">
 					Chance of Idea
-				</h1>
-			</button>
-			<!--<span class="text-sm text-muted-foreground whitespace-nowrap pl-2 border-l border-border"></span>-->
-			<!--<Button
-				variant="ghost"
-				@click="navigateTo('/projects/create')"
-				>Publish Project</Button
-			>-->
+				</span>
+			</NuxtLink>
+
 			<Button
 				variant="ghost"
-				@click="navigateTo('/projects')"
-				>Project Catalog</Button
+				as-child
 			>
-		</div>
+				<NuxtLink to="/projects">Project Catalog</NuxtLink>
+			</Button>
+		</nav>
+
 		<div class="flex items-center gap-3 shrink-0">
 			<Button
+				as-child
 				class="bg-primary text-primary-foreground hover:bg-primary/90"
-				@click="navigateTo('/projects/create')"
-				>Publish Project</Button
 			>
+				<NuxtLink to="/projects/create">Publish Project</NuxtLink>
+			</Button>
+
 			<template v-if="user">
-				<button
-					type="button"
-					class="rounded-full cursor-pointer focus-visible:ring-3 focus-visible:ring-ring/50 outline-none"
-					aria-label="Open profile"
-					@click="navigateTo('/me')"
+				<NuxtLink
+					to="/me"
+					class="rounded-full"
+					:aria-label="`Your profile (@${user.login})`"
 				>
 					<img
 						:src="user.avatarUrl"
-						:alt="user.login"
+						alt=""
 						class="w-8 h-8 rounded-full border border-border object-cover"
 					/>
-				</button>
+				</NuxtLink>
 				<Button
 					variant="outline"
 					class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
 					@click="logout"
-					>Log out</Button
 				>
+					Log out
+				</Button>
 			</template>
 			<Button
 				v-else
+				as-child
 				variant="outline"
 				class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
-				@click="navigateTo('/login')"
-				>Log in</Button
 			>
+				<NuxtLink to="/login">Log in</NuxtLink>
+			</Button>
 		</div>
 	</header>
 </template>
