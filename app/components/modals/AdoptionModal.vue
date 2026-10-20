@@ -2,7 +2,7 @@
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div class="w-full max-w-lg rounded-xl bg-card text-card-foreground p-6 shadow-xl border border-border">
       <div class="flex items-center justify-between pb-4 border-b border-border">
-        <h3 class="text-xl font-bold">Подати заявку на усиновлення</h3>
+        <h3 class="text-xl font-bold">Submit Adoption Request</h3>
         <button @click="$emit('close')" class="text-muted-foreground hover:text-foreground">
           ✕
         </button>
@@ -10,29 +10,29 @@
 
       <form @submit.prevent="handleSubmit" class="mt-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-1">Чому саме ви?</label>
+          <label class="block text-sm font-medium mb-1">Why you?</label>
           <textarea 
             v-model="form.whyMe" 
             rows="3" 
             required
-            placeholder="Розкажіть, чому цей проєкт має дістатися саме вам..."
+            placeholder="Tell us why this project should go to you..."
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           ></textarea>
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Ваш план дій (орієнтир 2-4 тижні)</label>
+          <label class="block text-sm font-medium mb-1">Your Action Plan (2-4 weeks horizon)</label>
           <textarea 
             v-model="form.actionPlan" 
             rows="3" 
             required
-            placeholder="Опишіть перші кроки після отримання проєкту..."
+            placeholder="Describe your first steps after getting the project..."
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           ></textarea>
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Посилання на GitHub / LinkedIn / Портфоліо</label>
+          <label class="block text-sm font-medium mb-1">GitHub / LinkedIn / Portfolio URL</label>
           <input 
             type="url" 
             v-model="form.portfolioUrl" 
@@ -51,7 +51,7 @@
             class="rounded border-input text-primary focus:ring-ring"
           />
           <label for="terms" class="text-sm text-muted-foreground">
-            Згоден з умовами передачі проєкту від автора
+            I agree with the project transfer terms set by the author
           </label>
         </div>
 
@@ -63,14 +63,14 @@
             @click="$emit('close')"
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
           >
-            Скасувати
+            Cancel
           </button>
           <button 
             type="submit" 
             :disabled="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {{ isLoading ? 'Надсилання...' : 'Надіслати заявку' }}
+            {{ isLoading ? 'Sending...' : 'Submit Request' }}
           </button>
         </div>
       </form>
@@ -105,7 +105,7 @@ const form = reactive({
   acceptTerms: false
 })
 
-// Start from a clean form each time the modal opens
+
 watch(
   () => props.isOpen,
   (open) => {
@@ -117,7 +117,7 @@ watch(
   }
 )
 
-// The parent sends the request and handles loading and errors
+
 const handleSubmit = () => {
   emit('submit', { ...form })
 }
