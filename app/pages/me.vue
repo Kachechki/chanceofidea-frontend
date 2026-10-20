@@ -84,9 +84,8 @@ const handleWrite = (applicantId: string) => {
 
 <template>
   <div class="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8">
-    <div v-if="!ready" class="py-24 text-center text-muted-foreground">
-      Loading profile...
-    </div>
+    <LoadingSpinner v-if="!ready" />
+
 
     <div
       v-else-if="!user"
@@ -174,9 +173,7 @@ const handleWrite = (applicantId: string) => {
       <div class="min-h-[300px]">
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
           <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
-          <div v-if="projectsLoading && createdProjects.length === 0" class="py-16 text-center text-muted-foreground">
-            Loading projects...
-          </div>
+          <LoadingSpinner v-if="projectsLoading && createdProjects.length === 0" />
           <div v-else-if="createdProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card v-for="project in createdProjects" :key="project.id" class="p-6 flex flex-col justify-between gap-4">
               <div class="flex flex-col gap-2">

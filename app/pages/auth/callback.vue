@@ -31,6 +31,6 @@ onMounted(async () => {
 			<p class="text-destructive font-medium">{{ error }}</p>
 			<Button variant="outline" @click="navigateTo('/login')">Back to login</Button>
 		</template>
-		<p v-else class="text-muted-foreground">Signing you in...</p>
+		<LoadingSpinner v-else />
 	</div>
 </template>

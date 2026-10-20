@@ -189,12 +189,7 @@ watch(
 				/>
 			</div>
 
-			<div
-				v-else-if="loading"
-				class="py-20 text-center text-muted-foreground"
-			>
-				Loading projects...
-			</div>
+			<LoadingSpinner v-else-if="loading" />
 
 			<div
 				v-else

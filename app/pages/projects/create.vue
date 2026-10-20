@@ -76,12 +76,7 @@ const fieldClass =
 
 <template>
     <div class="max-w-3xl mx-auto px-8 py-10">
-        <p
-            v-if="!ready"
-            class="py-24 text-center text-muted-foreground"
-        >
-            Loading...
-        </p>
+        <LoadingSpinner v-if="!ready" />
 
         <div
             v-else-if="!user"

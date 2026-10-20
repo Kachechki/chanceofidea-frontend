@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { Button } from '~/widgets/ui/button'
 import { Card, CardContent } from '~/widgets/ui/card'
 import {
-	LoaderCircle,
 	ExternalLink,
 	Folder,
 	Clock,
@@ -50,7 +49,8 @@ const myApplication = computed(() =>
 
 // What the Apply button shows for the current viewer
 const applyState = computed(() => {
-	if (!user.value) return { label: 'Log in to request adoption', canApply: true }
+	if (!user.value)
+		return { label: 'Log in to request adoption', canApply: true }
 	if (isOwner.value) return { label: 'This is your project', canApply: false }
 	if (project.value?.status !== ProjectStatusEnum.PUBLISHED) {
 		return { label: 'Not open for requests', canApply: false }
@@ -154,12 +154,7 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div
-		v-if="loading"
-		class="w-full flex flex-col items-center justify-center py-32"
-	>
-		<LoaderCircle class="w-16 h-16 animate-spin text-muted-foreground" />
-	</div>
+	<LoadingSpinner v-if="loading" />
 
 	<div
 		v-else-if="error || !project"
@@ -226,8 +221,14 @@ onMounted(async () => {
 						<HeartHandshake class="w-4 h-4" />
 						{{ applyState.label }}
 					</Button>
-					<NuxtLink v-if="isOwner" :to="`/projects/${project.id}/edit`">
-						<Button variant="outline" class="gap-2">
+					<NuxtLink
+						v-if="isOwner"
+						:to="`/projects/${project.id}/edit`"
+					>
+						<Button
+							variant="outline"
+							class="gap-2"
+						>
 							<Pencil class="w-4 h-4" />
 							Edit project
 						</Button>
@@ -403,14 +404,14 @@ onMounted(async () => {
 				</Card>
 			</aside>
 
-		<AdoptionModal
-			v-if="project"
-			:is-open="showAdoption"
-			:is-loading="submitting"
-			:error="submitError"
-			@close="showAdoption = false"
-			@submit="onSubmitApplication"
-		/>
+			<AdoptionModal
+				v-if="project"
+				:is-open="showAdoption"
+				:is-loading="submitting"
+				:error="submitError"
+				@close="showAdoption = false"
+				@submit="onSubmitApplication"
+			/>
 		</div>
 	</div>
 </template>
