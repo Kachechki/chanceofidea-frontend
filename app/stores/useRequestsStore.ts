@@ -18,8 +18,9 @@ const STATUS_LABEL: Record<
 	[ApplicationStatusEnum.REJECTED]: 'Rejected',
 }
 
-// RequestCard shows the applicant. On the outgoing side the viewer is the applicant,
-// so the card shows the project instead.
+// requestCard shows the applicant. on the outgoing side the viewer is the applicant,
+// so the card shows the project instead. the outgoing endpoint doesn't load the
+// project relation, so the card falls back to the project id until the backend adds it.
 const toRequestView = (
 	application: ApplicationEntity,
 	mode: 'incoming' | 'outgoing'
@@ -29,27 +30,26 @@ const toRequestView = (
 	status: STATUS_LABEL[application.status],
 	whyMe: application.whyMe,
 	actionPlan: application.plan ?? '',
-	portfolioUrl: application.portfolioUrl ?? '',
+	portfolioUrl: application.portflioUrl ?? '',
 	applicant:
 		mode === 'incoming'
 			? {
-					id: application.applicant.id,
-					name: application.applicant.login,
-					avatar: application.applicant.avatarUrl,
+					id: application.applicant?.id ?? '',
+					name: application.applicant?.login ?? 'unknown',
+					avatar: application.applicant?.avatarUrl,
 				}
 			: {
-					id: application.project.id,
-					name: application.project.title,
-					avatar: application.project.owner?.avatarUrl,
+					id: application.project?.id ?? '',
+					name: application.project?.title ?? 'Unknown project',
+					avatar: application.project?.owner?.avatarUrl,
 				},
 })
 
-// Endpoints are assumed (the backend has no application controller yet). Confirm before relying on them.
 export const useRequestsStore = defineStore('requests', {
 	state: () => ({
-		// Applications I sent
+		// applications I sent
 		outgoing: [] as ApplicationEntity[],
-		// Applications received on projects I own
+		// applications received on projects I own
 		incoming: [] as ApplicationEntity[],
 		loading: false,
 		error: null as string | null,
@@ -64,7 +64,8 @@ export const useRequestsStore = defineStore('requests', {
 			return state.outgoing.map((a) => toRequestView(a, 'outgoing'))
 		},
 
-		// My non-rejected application for a project, if any
+		// my non-rejected application for a project, if any
+		// needs the project relation on outgoing items. without it this never matches.
 		activeForProject: (state) => (projectId: string) =>
 			state.outgoing.find(
 				(a) => a.project?.id === projectId && isActiveApplication(a)
@@ -106,11 +107,19 @@ export const useRequestsStore = defineStore('requests', {
 			await Promise.all([this.fetchIncoming(), this.fetchOutgoing()])
 		},
 
-		// Throws on failure so the caller can show the message
 		async apply(input: CreateApplicationInput) {
 			this.error = null
 			try {
-				await $fetch('/api/application', { method: 'POST', body: input })
+				// the DTO spells it "porfolioUrl"; the key must match exactly
+				await $fetch('/api/application', {
+					method: 'POST',
+					body: {
+						projectId: input.projectId,
+						whyMe: input.whyMe,
+						plan: input.plan,
+						porfolioUrl: input.portfolioUrl,
+					},
+				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to send application')
 				throw err
@@ -131,7 +140,7 @@ export const useRequestsStore = defineStore('requests', {
 			try {
 				await $fetch('/api/application/accept', {
 					method: 'POST',
-					query: { id },
+					query: { applicationId: id },
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to accept application')
@@ -153,8 +162,8 @@ export const useRequestsStore = defineStore('requests', {
 			try {
 				await $fetch('/api/application/reject', {
 					method: 'POST',
-					query: { id },
-					body: { reason },
+					query: { applicationId: id },
+					body: { rejectReason: reason },
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to reject application')
