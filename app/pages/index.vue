@@ -19,36 +19,36 @@ const { user, ready } = useAuth()
 				<h1 class="text-5xl font-bold text-foreground leading-tight">
 					Give your unfinished side project a second life
 				</h1>
-				<span class="text-lg text-muted-foreground leading-relaxed max-w-xl">
+				<p class="text-lg text-muted-foreground leading-relaxed max-w-xl">
 					Second Chance Archive connects developers who want to pass on
 					abandoned or unfinished projects with adopters ready to continue the
 					work — preserving ideas and saving development time.
-				</span>
+				</p>
 
 				<div class="flex items-center gap-4 mt-2">
 					<Button
-						v-if="ready"
+						v-if="user"
+						as-child
 						size="lg"
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
-						@click="navigateTo('/me')"
 					>
-						Back to profile
+						<NuxtLink to="/me">Back to profile</NuxtLink>
 					</Button>
 					<Button
 						v-else
+						as-child
 						size="lg"
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
-						@click="navigateTo('/login')"
 					>
-						Log in
+						<NuxtLink to="/login">Log in</NuxtLink>
 					</Button>
 					<Button
+						as-child
 						size="lg"
 						variant="outline"
 						class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
-						@click="navigateTo(`/projects`)"
 					>
-						Find a project
+						<NuxtLink to="/projects">Find a project</NuxtLink>
 					</Button>
 				</div>
 			</div>
@@ -58,6 +58,7 @@ const { user, ready } = useAuth()
 				>
 					<FileBox
 						class="w-32 h-32 text-primary opacity-40"
+						aria-hidden="true"
 						stroke-width="1"
 					/>
 				</div>

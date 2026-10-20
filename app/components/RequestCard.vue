@@ -47,7 +47,7 @@ const getStatusBadgeClass = (status: string) => {
                 <div class="flex items-center gap-3">
                     <img
                         :src="request.applicant.avatar || 'https://github.githubassets.com/favicons/favicon.svg'"
-                        :alt="request.applicant.name"
+                        alt=""
                         class="w-10 h-10 rounded-full object-cover bg-secondary border border-border"
                     />
                     <div class="flex flex-col">
@@ -82,7 +82,8 @@ const getStatusBadgeClass = (status: string) => {
                         rel="noopener noreferrer"
                         class="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
                     >
-                        🔗 GitHub / Portfolio link
+                        <span aria-hidden="true">🔗</span> GitHub / Portfolio link
+                        <span class="sr-only">(opens in a new tab)</span>
                     </a>
                 </div>
             </div>

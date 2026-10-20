@@ -15,6 +15,8 @@ import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
 import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
 
 const { user, ready } = useAuth()
+
+useHead({ title: 'Publish a Project' })
 const projectsStore = useProjectsStore()
 const { selectableCategories, tags, loading, error } =
     storeToRefs(projectsStore)
@@ -88,9 +90,10 @@ const fieldClass =
             </h2>
             <Button
                 class="mt-2"
-                @click="navigateTo('/login')"
-                >Log in</Button
+                as-child
             >
+                <NuxtLink to="/login">Log in</NuxtLink>
+            </Button>
         </div>
 
         <Card
@@ -172,12 +175,13 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <span class="text-sm font-medium text-foreground">Tags</span>
-                        <div class="flex flex-wrap gap-2">
+                        <span id="create-tags-label" class="text-sm font-medium text-foreground">Tags</span>
+                        <div class="flex flex-wrap gap-2" role="group" aria-labelledby="create-tags-label">
                             <button
                                 v-for="tag in tags"
                                 :key="tag.id"
                                 type="button"
+                                :aria-pressed="form.tags.includes(tag.id)"
                                 @click="toggleTag(tag.id)"
                                 :class="[
                                     'px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer',
@@ -215,14 +219,17 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-1.5 pt-2 border-t border-border">
-                        <label class="text-sm font-medium text-foreground mb-1">
+                        <span id="create-media-label" class="text-sm font-medium text-foreground mb-1">
                             Media & External Links
-                        </label>
-                        <ProjectMediaUpload v-model="form.media" />
+                        </span>
+                        <div role="group" aria-labelledby="create-media-label">
+                            <ProjectMediaUpload v-model="form.media" />
+                        </div>
                     </div>
 
                     <p
                         v-if="formError || error"
+                        role="alert"
                         class="text-sm text-destructive"
                     >
                         {{ formError || error }}

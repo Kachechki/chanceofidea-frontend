@@ -19,6 +19,8 @@ const route = useRoute()
 const projectId = route.params.id as string
 
 const { user, ready } = useAuth()
+
+useHead({ title: 'Edit Project' })
 const projectsStore = useProjectsStore()
 const { currentProject, selectableCategories, tags, loading, error } =
     storeToRefs(projectsStore)
@@ -105,7 +107,9 @@ const fieldClass =
             class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
         >
             <h2 class="font-semibold text-lg text-foreground">Log in to edit project</h2>
-            <Button class="mt-2" @click="navigateTo('/login')">Log in</Button>
+            <Button as-child class="mt-2">
+                <NuxtLink to="/login">Log in</NuxtLink>
+            </Button>
         </div>
 
         <Card v-else class="rounded-2xl">
@@ -152,12 +156,13 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <span class="text-sm font-medium text-foreground">Tags</span>
-                        <div class="flex flex-wrap gap-2">
+                        <span id="edit-tags-label" class="text-sm font-medium text-foreground">Tags</span>
+                        <div class="flex flex-wrap gap-2" role="group" aria-labelledby="edit-tags-label">
                             <button
                                 v-for="tag in tags"
                                 :key="tag.id"
                                 type="button"
+                                :aria-pressed="form.tags.includes(tag.id)"
                                 @click="toggleTag(tag.id)"
                                 :class="[
                                     'px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer',
@@ -186,23 +191,24 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-1.5 pt-2 border-t border-border">
-                        <label class="text-sm font-medium text-foreground mb-1">
+                        <span id="edit-media-label" class="text-sm font-medium text-foreground mb-1">
                             Media & External Links
-                        </label>
-                        <ProjectMediaUpload v-model="form.media" />
+                        </span>
+                        <div role="group" aria-labelledby="edit-media-label">
+                            <ProjectMediaUpload v-model="form.media" />
+                        </div>
                     </div>
 
-                    <p v-if="formError || error" class="text-sm text-destructive">
+                    <p v-if="formError || error" role="alert" class="text-sm text-destructive">
                         {{ formError || error }}
                     </p>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
                         <Button
-                            type="button"
+                            as-child
                             variant="outline"
-                            @click="navigateTo(`/projects/${projectId}`)"
                         >
-                            Cancel
+                            <NuxtLink :to="`/projects/${projectId}`">Cancel</NuxtLink>
                         </Button>
                         <Button type="button" @click="submit">
                             Save changes

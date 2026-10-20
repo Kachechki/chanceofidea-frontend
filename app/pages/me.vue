@@ -12,6 +12,8 @@ import { useRequestsStore } from '~/stores/useRequestsStore'
 
 const { user, ready } = useAuth()
 
+useHead({ title: 'My Profile' })
+
 const projectsStore = useProjectsStore()
 const { myProjects, loading: projectsLoading, error: projectsError } = storeToRefs(projectsStore)
 
@@ -55,15 +57,15 @@ const tabClass = (tab: typeof activeTab.value) => [
     : 'border-transparent text-muted-foreground hover:text-foreground',
 ]
 
-// Accepting starts the GitHub transfer, so ask first
+// accepting starts the GitHub transfer, so ask first
 const handleAccept = async (id: string) => {
   if (!window.confirm('Accept this applicant? The repository will be transferred to them on GitHub.')) return
   try {
     await requestsStore.acceptRequest(id)
-    // Accepting changes the project status to TRANSFERRING
+    // accepting changes the project status to TRANSFERRING
     projectsStore.fetchMyProjects()
   } catch {
-    // The store keeps the message in `error`
+    // the store keeps the message in `error`
   }
 }
 
@@ -73,7 +75,7 @@ const handleReject = async (id: string) => {
   try {
     await requestsStore.rejectRequest(id, reason.trim())
   } catch {
-    // The store keeps the message in `error`
+    // the store keeps the message in `error`
   }
 }
 
@@ -93,7 +95,9 @@ const handleWrite = (applicantId: string) => {
     >
       <h2 class="font-semibold text-lg text-foreground">You are not logged in</h2>
       <p class="text-sm text-muted-foreground">Log in with GitHub to see your profile.</p>
-      <Button class="mt-2" @click="navigateTo('/login')">Log in</Button>
+      <Button as-child class="mt-2">
+        <NuxtLink to="/login">Log in</NuxtLink>
+      </Button>
     </div>
 
     <template v-else>
@@ -119,6 +123,7 @@ const handleWrite = (applicantId: string) => {
                 class="hover:text-foreground flex items-center gap-1"
               >
                 GitHub profile
+                <span class="sr-only">(opens in a new tab)</span>
               </a>
               <span v-if="joinedDate" class="flex items-center gap-1">
                 <Globe class="w-4 h-4" /> Joined {{ joinedDate }}
@@ -140,37 +145,78 @@ const handleWrite = (applicantId: string) => {
         </div>
       </div>
 
-      <div class="flex items-center border-b border-border gap-2">
-        <button :class="tabClass('created')" @click="activeTab = 'created'">
-          <Package class="w-4 h-4" /> Created Projects
+      <div role="tablist" aria-label="Profile sections" class="flex items-center border-b border-border gap-2">
+        <button
+          id="tab-created"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'created'"
+          aria-controls="profile-panel"
+          :tabindex="activeTab === 'created' ? 0 : -1"
+          :class="tabClass('created')"
+          @click="activeTab = 'created'"
+        >
+          <Package class="w-4 h-4" aria-hidden="true" /> Created Projects
           <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
             {{ createdProjects.length }}
           </span>
         </button>
 
-        <button :class="tabClass('adopted')" @click="activeTab = 'adopted'">
-          <HeartHandshake class="w-4 h-4" /> Adopted Projects
+        <button
+          id="tab-adopted"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'adopted'"
+          aria-controls="profile-panel"
+          :tabindex="activeTab === 'adopted' ? 0 : -1"
+          :class="tabClass('adopted')"
+          @click="activeTab = 'adopted'"
+        >
+          <HeartHandshake class="w-4 h-4" aria-hidden="true" /> Adopted Projects
           <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
             {{ adoptedProjects.length }}
           </span>
         </button>
 
-        <button :class="tabClass('requests')" @click="activeTab = 'requests'">
-          <FileText class="w-4 h-4" /> Requests
+        <button
+          id="tab-requests"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'requests'"
+          aria-controls="profile-panel"
+          :tabindex="activeTab === 'requests' ? 0 : -1"
+          :class="tabClass('requests')"
+          @click="activeTab = 'requests'"
+        >
+          <FileText class="w-4 h-4" aria-hidden="true" /> Requests
           <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
             {{ incomingRequests.length + outgoingRequests.length }}
           </span>
         </button>
 
-        <button :class="tabClass('favorites')" @click="activeTab = 'favorites'">
-          <Bookmark class="w-4 h-4" /> Favorites
+        <button
+          id="tab-favorites"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'favorites'"
+          aria-controls="profile-panel"
+          :tabindex="activeTab === 'favorites' ? 0 : -1"
+          :class="tabClass('favorites')"
+          @click="activeTab = 'favorites'"
+        >
+          <Bookmark class="w-4 h-4" aria-hidden="true" /> Favorites
           <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
             {{ favoriteProjects.length }}
           </span>
         </button>
       </div>
 
-      <div class="min-h-[300px]">
+      <div
+        id="profile-panel"
+        role="tabpanel"
+        :aria-labelledby="`tab-${activeTab}`"
+        class="min-h-[300px]"
+      >
         <div v-if="activeTab === 'created'" class="flex flex-col gap-4">
           <p v-if="projectsError" class="text-sm text-destructive">{{ projectsError }}</p>
           <LoadingSpinner v-if="projectsLoading && createdProjects.length === 0" />

@@ -15,7 +15,7 @@ export interface ProjectEntity {
 	status: ProjectStatusEnum
 	readiness?: number
 	description: string
-	repositoryName: string // Repo name only; full name is owner.login + '/' + repositoryName
+	repositoryName: string // repo name only; full name is owner.login + '/' + repositoryName
 	createdAt: string | Date
 	owner?: UserEntity
 	category?: CategoryEntity

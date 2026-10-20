@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Button } from '~/widgets/ui/button'
+
+useHead({ title: 'Log in' })
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/widgets/ui/card'
 import { Input } from '~/components/ui/input'
 import GithubLoginButton from '~/components/GithubLoginButton.vue'
