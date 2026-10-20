@@ -287,7 +287,8 @@ const fieldClass =
                         />
                     </div>
 
-                    <div class="flex flex-col gap-1.5 pt-2 border-t border-border">
+                    <!-- not yet for the mvp -->
+                    <!--<div class="flex flex-col gap-1.5 pt-2 border-t border-border">
                         <span
                             id="create-media-label"
                             class="text-sm font-medium text-foreground mb-1"
@@ -303,7 +304,7 @@ const fieldClass =
                                 :errors="{ figmaUrl: errors.figmaUrl, demoUrl: errors.demoUrl }"
                             />
                         </div>
-                    </div>
+                    </div>-->
 
                     <p
                         v-if="serverError"
