@@ -12,7 +12,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
 import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
-import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
+import GitHubRepoPickerManual from '~/components/GitHubRepoPickerManual.vue'
 import FieldError from '~/components/FieldError.vue'
 import { errorMessage } from '~/lib/errors'
 import {
@@ -171,7 +171,7 @@ const fieldClass =
                             for="repository"
                             class="text-sm font-medium text-foreground"
                         >Repository</label>
-                        <GitHubRepoPicker
+                        <GitHubRepoPickerManual
                             id="repository"
                             v-model="form.repositoryName"
                             :error="errors.repository"
