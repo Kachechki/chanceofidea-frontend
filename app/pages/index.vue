@@ -32,7 +32,7 @@ const { user, ready } = useAuth()
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
 						@click="navigateTo('/me')"
 					>
-						Go to profile
+						Back to profile
 					</Button>
 					<Button
 						v-else
