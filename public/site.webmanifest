@@ -1,0 +1,14 @@
+{
+  "name": "Second Chance Archive",
+  "short_name": "Second Chance",
+  "description": "Marketplace for abandoned and unfinished side projects.",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

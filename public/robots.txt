@@ -1,2 +1,10 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /me
+Disallow: /projects/create
+Disallow: /projects/*/edit
+
+# replace with the production domain before deploying
+Sitemap: https://chanceofidea-frontend.onrender.com/sitemap.xml

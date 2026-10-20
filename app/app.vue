@@ -3,6 +3,10 @@ const { fetchMe } = useAuth()
 
 useHead({
 	htmlAttrs: { lang: 'en' },
+	link: [
+		{ rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+		{ rel: 'manifest', href: '/site.webmanifest' },
+	],
 	titleTemplate: (title) =>
 		title ? `${title} · Second Chance Archive` : 'Second Chance Archive',
 })
@@ -14,6 +18,7 @@ useSeoMeta({
 	ogDescription:
 		'Give your unfinished side project a second life. Browse and adopt abandoned open-source projects.',
 	ogType: 'website',
+	twitterCard: 'summary',
 })
 
 onMounted(() => fetchMe())
