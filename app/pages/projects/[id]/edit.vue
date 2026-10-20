@@ -73,7 +73,7 @@ const submit = async () => {
 
     try {
         await $fetch(`/api/project`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: {
                 id: projectId,
                 title: form.title.trim(),
