@@ -11,6 +11,7 @@ import {
 	Tag,
 	Sprout,
 	HeartHandshake,
+	Pencil,
 } from '@lucide/vue'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
@@ -225,6 +226,12 @@ onMounted(async () => {
 						<HeartHandshake class="w-4 h-4" />
 						{{ applyState.label }}
 					</Button>
+					<NuxtLink v-if="isOwner" :to="`/projects/${project.id}/edit`">
+						<Button variant="outline" class="gap-2">
+							<Pencil class="w-4 h-4" />
+							Edit project
+						</Button>
+					</NuxtLink>
 					<a
 						:href="repoUrl"
 						target="_blank"
