@@ -13,6 +13,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
 import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
+import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
 
 const route = useRoute()
 const projectId = route.params.id as string
@@ -62,6 +63,7 @@ const toggleTag = (id: string) => {
 
 const validate = () => {
     if (!form.title.trim()) return 'Title is required'
+    if (!form.repositoryName.trim()) return 'Repository name is required'
     if (!form.description.trim()) return 'Description is required'
     if (!form.categoryId) return 'Pick a category'
     return ''
@@ -78,6 +80,7 @@ const submit = async () => {
                 id: projectId,
                 title: form.title.trim(),
                 description: form.description.trim(),
+                repositoryName: form.repositoryName.trim(),
                 categoryId: form.categoryId,
                 tags: form.tags,
                 readiness: form.readinessPercent / 100,
@@ -119,6 +122,11 @@ const fieldClass =
                     <div class="flex flex-col gap-1.5">
                         <label for="title" class="text-sm font-medium text-foreground">Title</label>
                         <Input id="title" v-model="form.title" />
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-sm font-medium text-foreground">Repository</label>
+                        <GitHubRepoPicker v-model="form.repositoryName" />
                     </div>
 
                     <div class="flex flex-col gap-1.5">

@@ -12,6 +12,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
 import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
+import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
 
 const { user, ready } = useAuth()
 const projectsStore = useProjectsStore()
@@ -127,15 +128,10 @@ const fieldClass =
 
                     <div class="flex flex-col gap-1.5">
                         <label
-                            for="repo"
                             class="text-sm font-medium text-foreground"
-                            >Repository name</label
+                            >Repository</label
                         >
-                        <Input
-                            id="repo"
-                            v-model="form.repositoryName"
-                            placeholder="walkman-firmware"
-                        />
+                        <GitHubRepoPicker v-model="form.repositoryName" />
                     </div>
 
                     <div class="flex flex-col gap-1.5">
