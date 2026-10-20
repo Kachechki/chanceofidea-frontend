@@ -7,6 +7,7 @@ import { Upload } from '@lucide/vue'
 import { Sprout } from '@lucide/vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import LandingCard from '~/widgets/LandingCard.vue'
+const { user, ready } = useAuth()
 </script>
 
 <template>
@@ -23,17 +24,24 @@ import LandingCard from '~/widgets/LandingCard.vue'
 					abandoned or unfinished projects with adopters ready to continue the
 					work — preserving ideas and saving development time.
 				</span>
-				
-				
+
 				<div class="flex items-center gap-4 mt-2">
 					<Button
+						v-if="ready"
+						size="lg"
+						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+						@click="navigateTo('/me')"
+					>
+						Go to profile
+					</Button>
+					<Button
+						v-else
 						size="lg"
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
 						@click="navigateTo('/login')"
 					>
 						Log in
 					</Button>
-					
 					<Button
 						size="lg"
 						variant="outline"
