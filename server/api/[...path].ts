@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 	const access = getCookie(event, ACCESS)
 	const refresh = getCookie(event, REFRESH)
 
-	const call = (headers: Record<string, string>) =>
+	const call = (headers: Record<string, string> = {}) =>
 		$fetch.raw(`${backendUrl}/${path}`, {
 			method,
 			query,
@@ -16,19 +16,29 @@ export default defineEventHandler(async (event) => {
 			ignoreResponseError: true,
 		})
 
-	let res = access
-		? await call({ Authorization: `Bearer ${access}` })
-		: undefined
+	let res
 
+	// 1. try fetching with Access Token if present
+	if (access) {
+		res = await call({ Authorization: `Bearer ${access}` })
+	}
+
+	// 2. if access failed (401) or wasn't provided, try Refresh Token
 	if ((!res || res.status === 401) && refresh) {
 		res = await call({ Cookie: `refresh=${refresh}` })
 		const newAccess = res.headers.get('x-access-token')
 		if (newAccess) setAccessCookie(event, newAccess)
 	}
 
-	if (!res)
-		throw createError({ statusCode: 401, statusMessage: 'Not logged in' })
-	if (res.status === 401) clearAuthCookies(event)
+	// 3. if still no response (guest with no cookies), fetch publicly without headers
+	if (!res) {
+		res = await call()
+	}
+
+	// 4. handle remaining 401 responses from backend
+	if (res.status === 401) {
+		clearAuthCookies(event)
+	}
 
 	setResponseStatus(event, res.status)
 	return res._data
