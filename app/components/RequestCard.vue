@@ -95,9 +95,9 @@ const getStatusBadgeClass = (status: string) => {
                 <Button size="sm" variant="destructive" @click="$emit('reject', request.id)">
                     Reject
                 </Button>
-                <Button size="sm" variant="outline" @click="$emit('write', request.applicant.id)">
+                <!--<Button size="sm" variant="outline" @click="$emit('write', request.applicant.id)">
                     Write
-                </Button>
+                </Button>-->
             </div>
         </CardContent>
     </Card>
