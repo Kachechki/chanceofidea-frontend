@@ -1,22 +1,19 @@
 import type { H3Event } from 'h3'
 
-export const ACCESS = 'access_token'
+// the backend only accepts the refresh cookie (AuthGuard), so it is the whole session
 export const REFRESH = 'refresh_token'
 
-const base = () => ({
-	httpOnly: true,
-	sameSite: 'lax' as const,
-	secure: process.env.NODE_ENV === 'production',
-	path: '/',
-})
-
-export const setAccessCookie = (event: H3Event, token: string) =>
-	setCookie(event, ACCESS, token, { ...base(), maxAge: 60 * 15 })
+const REFRESH_MAX_AGE = 60 * 60 * 24 * 5
 
 export const setRefreshCookie = (event: H3Event, token: string) =>
-	setCookie(event, REFRESH, token, { ...base(), maxAge: 60 * 60 * 24 * 5 })
+	setCookie(event, REFRESH, token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: process.env.NODE_ENV === 'production',
+		path: '/',
+		maxAge: REFRESH_MAX_AGE,
+	})
 
 export const clearAuthCookies = (event: H3Event) => {
-	deleteCookie(event, ACCESS, { path: '/' })
 	deleteCookie(event, REFRESH, { path: '/' })
 }

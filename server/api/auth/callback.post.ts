@@ -7,13 +7,17 @@ export default defineEventHandler(async (event) => {
 		ignoreResponseError: true,
 	})
 
-	const access = res.headers.get('access')
-	const refresh = res.headers.get('refresh')
-	if (!res.ok || !access || !refresh) {
+	// the backend sets the refresh token as a cookie on its own response
+	const setCookies = res.headers.getSetCookie?.() ?? [
+		res.headers.get('set-cookie') ?? '',
+	]
+	const refreshCookie = setCookies.find((c) => c.startsWith('refresh='))
+	const refresh = refreshCookie?.split(';')[0]?.slice('refresh='.length)
+
+	if (!res.ok || !refresh) {
 		throw createError({ statusCode: 401, statusMessage: 'GitHub login failed' })
 	}
 
-	setAccessCookie(event, access)
 	setRefreshCookie(event, refresh)
 	return { ok: true }
 })
