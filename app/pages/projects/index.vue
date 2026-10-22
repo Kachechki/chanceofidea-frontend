@@ -20,10 +20,12 @@ const {
 	selectedTagIds,
 	selectedSort,
 	filteredProjects,
+	page,
+	hasNextPage,
 	loading,
 	error,
 } = storeToRefs(projectsStore)
-const { setCategory, toggleTag, clearFilters } = projectsStore
+const { setCategory, toggleTag, clearFilters, goToPage } = projectsStore
 
 const selectedCategorySlug = computed(
 	() =>
@@ -62,7 +64,8 @@ onMounted(async () => {
 		.filter((t) => tagSlugs.includes(t.slug))
 		.map((t) => t.id)
 
-	await projectsStore.fetchProjects()
+	// a fresh visit always starts on the first page
+	await projectsStore.fetchProjects(1)
 })
 
 let searchTimeout: ReturnType<typeof setTimeout>
@@ -232,5 +235,29 @@ watch(
 				</Button>
 			</div>
 		</div>
+
+		<nav
+			v-if="!loading && (page > 1 || hasNextPage)"
+			aria-label="Project pages"
+			class="flex items-center justify-center gap-4"
+		>
+			<Button
+				variant="outline"
+				:disabled="page === 1"
+				@click="goToPage(page - 1)"
+			>
+				Previous
+			</Button>
+			<span class="text-sm text-muted-foreground" aria-current="page">
+				Page {{ page }}
+			</span>
+			<Button
+				variant="outline"
+				:disabled="!hasNextPage"
+				@click="goToPage(page + 1)"
+			>
+				Next
+			</Button>
+		</nav>
 	</div>
 </template>

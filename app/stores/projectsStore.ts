@@ -9,6 +9,10 @@ import type { GithubRepository } from '~/types/github'
 
 export type ProjectSort = 'newest' | 'readiness' | 'name'
 
+// must match the backend page size (skip = (page - 1) * 20, pages start at 1)
+const PROJECTS_PAGE_SIZE = 20
+let projectsRequestId = 0
+
 export interface CreateProjectInput {
 	title: string
 	description: string
@@ -22,6 +26,9 @@ export interface CreateProjectInput {
 export const useProjectsStore = defineStore('projects', {
 	state: () => ({
 		projects: [] as ProjectEntity[],
+		// pagination: the backend returns 20 per page and no total count
+		page: 1,
+		hasNextPage: false,
 		myProjects: [] as ProjectEntity[],
 		currentProject: null as ProjectEntity | null,
 		categories: [] as CategoryEntity[],
@@ -100,33 +107,46 @@ export const useProjectsStore = defineStore('projects', {
 			}
 		},
 
-		async fetchProjects() {
+		async fetchProjects(page = 1) {
+			// only the latest request may write results, so fast clicks can't show stale pages
+			const requestId = ++projectsRequestId
 			this.loading = true
 			this.error = null
 			try {
-				this.projects = await $fetch<ProjectEntity[]>(
-					'/api/project/projects/0',
+				const result = await $fetch<ProjectEntity[]>(
+					`/api/project/projects/${page}`,
 					{
 						query: this.buildFilterQuery(),
 					}
 				)
+				if (requestId !== projectsRequestId) return
+				this.projects = result
+				this.page = page
+				this.hasNextPage = result.length === PROJECTS_PAGE_SIZE
 			} catch (err) {
+				if (requestId !== projectsRequestId) return
 				this.error = errorMessage(err, 'Failed to load projects')
 			} finally {
-				this.loading = false
+				if (requestId === projectsRequestId) this.loading = false
 			}
+		},
+
+		async goToPage(page: number) {
+			if (page < 1 || page === this.page) return
+			if (page > this.page && !this.hasNextPage) return
+			await this.fetchProjects(page)
 		},
 
 		async setCategory(id: string) {
 			this.selectedCategoryId = id
-			await this.fetchProjects()
+			await this.fetchProjects(1)
 		},
 
 		async toggleTag(id: string) {
 			this.selectedTagIds = this.selectedTagIds.includes(id)
 				? this.selectedTagIds.filter((t) => t !== id)
 				: [...this.selectedTagIds, id]
-			await this.fetchProjects()
+			await this.fetchProjects(1)
 		},
 
 		async clearFilters() {
@@ -134,7 +154,7 @@ export const useProjectsStore = defineStore('projects', {
 			this.selectedCategoryId = ALL_CATEGORY_ID
 			this.selectedTagIds = []
 			this.selectedSort = 'newest'
-			await this.fetchProjects()
+			await this.fetchProjects(1)
 		},
 
 		async fetchProjectById(id: string) {
