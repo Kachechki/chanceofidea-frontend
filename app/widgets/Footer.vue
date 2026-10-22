@@ -22,9 +22,8 @@
         </nav>
         <nav aria-labelledby="footer-legal" class="flex flex-col gap-3">
           <h2 id="footer-legal" class="font-semibold text-foreground">Legal &amp; Terms</h2>
-          <!-- No legal pages exist yet, so these are not links -->
-          <span class="text-muted-foreground" aria-disabled="true">Privacy Policy</span>
-          <span class="text-muted-foreground" aria-disabled="true">Terms of Service</span>
+          <NuxtLink to="/privacy" class="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</NuxtLink>
+          <NuxtLink to="/terms" class="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</NuxtLink>
         </nav>
       </div>
 
