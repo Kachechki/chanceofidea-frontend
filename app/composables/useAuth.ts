@@ -13,7 +13,7 @@ export const useAuth = () => {
 		const params = new URLSearchParams({
 			client_id: config.public.githubClientId as string,
 			redirect_uri: `${window.location.origin}/auth/callback`,
-			scope: 'read:user',
+			scope: 'repo read:user',
 			state,
 		})
 		window.location.href = `https://github.com/login/oauth/authorize?${params}`
