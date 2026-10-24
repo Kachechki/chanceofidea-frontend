@@ -26,6 +26,7 @@ const toRequestView = (
 	mode: 'incoming' | 'outgoing'
 ): AdoptionRequestEntity => ({
 	id: application.id,
+	repoName: mode === 'incoming' ? application.project?.repositoryName : undefined,
 	createdAt: new Date(application.createdAt).toLocaleDateString('uk-UA'),
 	status: STATUS_LABEL[application.status],
 	whyMe: application.whyMe,

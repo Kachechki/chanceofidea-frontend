@@ -10,6 +10,8 @@ export interface AdoptionRequestEntity {
     whyMe: string
     actionPlan: string
     portfolioUrl: string
+    // full repo name, set on incoming requests only
+    repoName?: string
     applicant: {
         id: string
         name: string
@@ -52,6 +54,7 @@ const getStatusBadgeClass = (status: string) => {
                     />
                     <div class="flex flex-col">
                         <span class="font-semibold text-sm text-foreground">{{ request.applicant.name }}</span>
+                        <span v-if="request.repoName" class="text-xs text-primary font-mono break-all">{{ request.repoName }}</span>
                         <span class="text-xs text-muted-foreground font-mono">Submitted: {{ request.createdAt }}</span>
                     </div>
                 </div>
