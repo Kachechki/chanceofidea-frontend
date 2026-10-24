@@ -9,6 +9,8 @@ import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
 import { LIMITS, validateText } from '~/lib/validation'
+import type { ApplicationEntity } from '~/types/application'
+import AcceptTransferModal from '~/components/modals/AcceptTransferModal.vue'
 
 const { user, ready } = useAuth()
 
@@ -57,15 +59,36 @@ const tabClass = (tab: typeof activeTab.value) => [
     : 'border-transparent text-muted-foreground hover:text-foreground',
 ]
 
-// accepting starts the github transfer, so ask first
-const handleAccept = async (id: string) => {
-  if (!window.confirm('Accept this applicant? The repository will be transferred to them on GitHub.')) return
+// the accept confirmation dialog, opened with the application being accepted
+const acceptTarget = ref<ApplicationEntity | null>(null)
+const acceptSubmitting = ref(false)
+const acceptError = ref('')
+
+const openAccept = (id: string) => {
+  const application = requestsStore.incoming.find((a) => a.id === id)
+  if (!application) return
+  acceptError.value = ''
+  acceptTarget.value = application
+}
+
+const closeAccept = () => {
+  if (acceptSubmitting.value) return
+  acceptTarget.value = null
+}
+
+const confirmAccept = async () => {
+  if (!acceptTarget.value) return
+  acceptSubmitting.value = true
+  acceptError.value = ''
   try {
-    await requestsStore.acceptRequest(id)
+    await requestsStore.acceptRequest(acceptTarget.value.id)
+    acceptTarget.value = null
     // accepting changes the project status to TRANSFERRING
     projectsStore.fetchMyProjects()
-  } catch {
-    // the store keeps the message in `error`
+  } catch (err) {
+    acceptError.value = requestsStore.error ?? 'Failed to accept application'
+  } finally {
+    acceptSubmitting.value = false
   }
 }
 
@@ -284,7 +307,7 @@ const handleWrite = (applicantId: string) => {
                 :key="req.id"
                 :request="req"
                 :is-author-view="true"
-                @accept="handleAccept"
+                @accept="openAccept"
                 @reject="handleReject"
                 @write="handleWrite"
               />
@@ -334,5 +357,16 @@ const handleWrite = (applicantId: string) => {
         </div>
       </div>
     </template>
+
+    <AcceptTransferModal
+      v-if="acceptTarget"
+      :is-open="!!acceptTarget"
+      :repo-name="acceptTarget.project?.repositoryName ?? ''"
+      :applicant-login="acceptTarget.applicant?.login ?? ''"
+      :is-loading="acceptSubmitting"
+      :error="acceptError"
+      @close="closeAccept"
+      @confirm="confirmAccept"
+    />
   </div>
 </template>
