@@ -8,6 +8,7 @@ import { Button } from '~/widgets/ui/button'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
+import { useBookmarksStore } from '~/stores/bookmarksStore'
 import type { ApplicationEntity } from '~/types/application'
 import { useRoute } from 'vue-router'
 import AcceptTransferModal from '~/components/modals/AcceptTransferModal.vue'
@@ -24,7 +25,7 @@ const { myProjects, loading: projectsLoading, error: projectsError } = storeToRe
 const requestsStore = useRequestsStore()
 const { incomingRequests, outgoingRequests, applicantTransfers } = storeToRefs(requestsStore)
 
-type ProfileTab = 'created' | 'adopted' | 'requests' | 'transfers' | 'favorites'
+type ProfileTab = 'created' | 'bookmarks' | 'requests' | 'transfers' | 'adopted'
 const route = useRoute()
 const activeTab = ref<ProfileTab>(route.query.tab === 'transfers' ? 'transfers' : 'created')
 
@@ -46,7 +47,17 @@ const createdProjects = computed<ProjectEntity[]>(() =>
 const adoptedProjects = computed<ProjectEntity[]>(() =>
   myProjects.value.filter((p) => p.status === ProjectStatusEnum.ADOPTED)
 )
-const favoriteProjects = computed<ProjectEntity[]>(() => [])
+const bookmarks = useBookmarksStore()
+const bookmarkedProjects = computed<ProjectEntity[]>(() => bookmarks.items)
+
+// tab order: created, bookmarks, requests, transfers, adopted
+const tabs = computed(() => [
+  { id: 'created' as const, label: 'Created Projects', icon: Package, count: createdProjects.value.length },
+  { id: 'bookmarks' as const, label: 'Bookmarks', icon: Bookmark, count: bookmarkedProjects.value.length },
+  { id: 'requests' as const, label: 'Requests', icon: FileText, count: incomingRequests.value.length + outgoingRequests.value.length },
+  { id: 'transfers' as const, label: 'Transfers', icon: Clock, count: applicantTransfers.value.length },
+  { id: 'adopted' as const, label: 'Adopted Projects', icon: HeartHandshake, count: adoptedProjects.value.length },
+])
 
 const publishedCount = computed(
   () => createdProjects.value.filter((p) => p.status === ProjectStatusEnum.PUBLISHED).length
@@ -231,82 +242,20 @@ const confirmReject = async (reason: string) => {
 
       <div role="tablist" aria-label="Profile sections" class="flex items-center border-b border-border gap-2 overflow-x-auto">
         <button
-          id="tab-created"
+          v-for="tab in tabs"
+          :id="`tab-${tab.id}`"
+          :key="tab.id"
           type="button"
           role="tab"
-          :aria-selected="activeTab === 'created'"
+          :aria-selected="activeTab === tab.id"
           aria-controls="profile-panel"
-          :tabindex="activeTab === 'created' ? 0 : -1"
-          :class="tabClass('created')"
-          @click="activeTab = 'created'"
+          :tabindex="activeTab === tab.id ? 0 : -1"
+          :class="tabClass(tab.id)"
+          @click="activeTab = tab.id"
         >
-          <Package class="w-4 h-4" aria-hidden="true" /> Created Projects
+          <component :is="tab.icon" class="w-4 h-4" aria-hidden="true" /> {{ tab.label }}
           <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
-            {{ createdProjects.length }}
-          </span>
-        </button>
-
-        <button
-          id="tab-adopted"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === 'adopted'"
-          aria-controls="profile-panel"
-          :tabindex="activeTab === 'adopted' ? 0 : -1"
-          :class="tabClass('adopted')"
-          @click="activeTab = 'adopted'"
-        >
-          <HeartHandshake class="w-4 h-4" aria-hidden="true" /> Adopted Projects
-          <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
-            {{ adoptedProjects.length }}
-          </span>
-        </button>
-
-        <button
-          id="tab-requests"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === 'requests'"
-          aria-controls="profile-panel"
-          :tabindex="activeTab === 'requests' ? 0 : -1"
-          :class="tabClass('requests')"
-          @click="activeTab = 'requests'"
-        >
-          <FileText class="w-4 h-4" aria-hidden="true" /> Requests
-          <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
-            {{ incomingRequests.length + outgoingRequests.length }}
-          </span>
-        </button>
-
-        <button
-          id="tab-transfers"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === 'transfers'"
-          aria-controls="profile-panel"
-          :tabindex="activeTab === 'transfers' ? 0 : -1"
-          :class="tabClass('transfers')"
-          @click="activeTab = 'transfers'"
-        >
-          <Clock class="w-4 h-4" aria-hidden="true" /> Transfers
-          <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
-            {{ applicantTransfers.length }}
-          </span>
-        </button>
-
-        <button
-          id="tab-favorites"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === 'favorites'"
-          aria-controls="profile-panel"
-          :tabindex="activeTab === 'favorites' ? 0 : -1"
-          :class="tabClass('favorites')"
-          @click="activeTab = 'favorites'"
-        >
-          <Bookmark class="w-4 h-4" aria-hidden="true" /> Favorites
-          <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
-            {{ favoriteProjects.length }}
+            {{ tab.count }}
           </span>
         </button>
       </div>
@@ -425,9 +374,6 @@ const confirmReject = async (reason: string) => {
         </div>
 
         <div v-if="activeTab === 'transfers'" class="flex flex-col gap-4">
-          <p class="text-sm text-muted-foreground">
-            Repositories the owners have handed to you. Accept each transfer on GitHub first, then confirm here.
-          </p>
           <ul
             v-if="applicantTransfers.length > 0"
             aria-label="Your transfers"
@@ -450,24 +396,39 @@ const confirmReject = async (reason: string) => {
           >
             <h3 class="font-semibold text-lg text-foreground">No transfers waiting</h3>
             <p class="text-sm text-muted-foreground max-w-sm">
-              When an owner accepts your application, the transfer appears here with the steps to take.
+              When an owner accepts your application, the repository transfer shows up here. Accept it on GitHub first, then confirm receipt here.
             </p>
           </div>
         </div>
 
-        <div v-if="activeTab === 'favorites'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
-          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Bookmark class="w-6 h-6" />
+        <div v-if="activeTab === 'bookmarks'" class="flex flex-col gap-4">
+          <ul
+            v-if="bookmarkedProjects.length > 0"
+            aria-label="Bookmarked projects"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <li v-for="project in bookmarkedProjects" :key="project.id">
+              <ProjectCard :project="project" />
+            </li>
+          </ul>
+
+          <div
+            v-else
+            class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
+          >
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <Bookmark class="w-6 h-6" aria-hidden="true" />
+            </div>
+            <div class="text-center">
+              <h3 class="font-semibold text-lg text-foreground">No bookmarks yet</h3>
+              <p class="text-sm text-muted-foreground max-w-sm mt-1">
+                Bookmark projects while browsing the catalog to come back to them later.
+              </p>
+            </div>
+            <NuxtLink to="/projects">
+              <Button class="mt-2" variant="outline">Explore catalog</Button>
+            </NuxtLink>
           </div>
-          <div class="text-center">
-            <h3 class="font-semibold text-lg text-foreground">No bookmarked projects</h3>
-            <p class="text-sm text-muted-foreground max-w-sm mt-1">
-              Save interesting projects while browsing the catalog to review them later.
-            </p>
-          </div>
-          <NuxtLink to="/projects">
-            <Button class="mt-2" variant="outline">Explore catalog</Button>
-          </NuxtLink>
         </div>
       </div>
     </template>

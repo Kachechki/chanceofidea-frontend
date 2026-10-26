@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const { fetchMe } = useAuth()
+import { useBookmarksStore } from '~/stores/bookmarksStore'
+const { user, fetchMe } = useAuth()
+const bookmarks = useBookmarksStore()
+
+watch(() => user.value?.id, (id) => bookmarks.load(id ?? null), { immediate: true })
 
 useHead({
 	htmlAttrs: { lang: 'en' },

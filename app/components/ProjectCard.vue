@@ -59,14 +59,14 @@
 						<button
 							type="button"
 							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer"
-							:aria-pressed="isBookmarked"
-							:aria-label="isBookmarked ? `Remove ${project.title} from bookmarks` : `Bookmark ${project.title}`"
-							@click="$emit('bookmark', project)"
+							:aria-pressed="bookmarked"
+							:aria-label="bookmarked ? `Remove ${project.title} from bookmarks` : `Add ${project.title} to bookmarks`"
+							@click="onBookmark"
 						>
 							<Bookmark
 								class="w-4 h-4"
 								aria-hidden="true"
-								:class="{ 'fill-current text-primary': isBookmarked }"
+								:class="{ 'fill-current text-primary': bookmarked }"
 							/>
 						</button>
 
@@ -91,23 +91,29 @@ import { Bookmark, ExternalLink } from '@lucide/vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { type ProjectEntity, ProjectStatusEnum } from '~/types/project'
 import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
+import { useBookmarksStore } from '~/stores/bookmarksStore'
 
 interface Props {
 	project: ProjectEntity
 	bannerClass?: string // Optional top banner styling for featured cards (like the 4th Figma variant)
-	isBookmarked?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
 	bannerClass: '',
-	isBookmarked: false,
 })
 
 const fullName = computed(() => getProjectFullName(props.project))
 const repoUrl = computed(() => getProjectRepoUrl(props.project))
 
+const bookmarks = useBookmarksStore()
+const bookmarked = computed(() => bookmarks.isBookmarked(props.project.id))
+
+// signed-out users are sent to log in instead
+const onBookmark = () => {
+	if (!bookmarks.toggle(props.project)) navigateTo('/login')
+}
+
 defineEmits<{
-	(e: 'bookmark', project: ProjectEntity): void
 	(e: 'external', project: ProjectEntity): void
 }>()
 

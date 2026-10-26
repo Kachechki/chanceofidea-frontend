@@ -11,9 +11,11 @@ import {
 	Sprout,
 	HeartHandshake,
 	Pencil,
+	Bookmark,
 } from '@lucide/vue'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
+import { useBookmarksStore } from '~/stores/bookmarksStore'
 import AdoptionModal from '~/components/modals/AdoptionModal.vue'
 import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
 import { ProjectStatusEnum } from '~/types/project'
@@ -30,6 +32,17 @@ const error = ref('')
 const loading = ref(true)
 const showAdoption = ref(false)
 const project = computed(() => projectsStore.currentProject)
+
+const bookmarks = useBookmarksStore()
+const isBookmarked = computed(
+	() => !!project.value && bookmarks.isBookmarked(project.value.id)
+)
+
+// signed-out users are sent to log in instead
+const onBookmark = () => {
+	if (project.value && !bookmarks.toggle(project.value)) navigateTo('/login')
+}
+
 
 useHead({
 	title: computed(() => project.value?.title ?? 'Project'),
@@ -193,6 +206,7 @@ onMounted(async () => {
 		return
 	}
 	const returned = await projectsStore.fetchProjectById(id)
+	if (returned) bookmarks.refresh(returned)
 	if (returned == null) error.value = 'Project not found'
 	loading.value = false
 })
@@ -257,6 +271,19 @@ onMounted(async () => {
 				</div>
 
 				<div class="flex flex-wrap items-center gap-3 shrink-0">
+					<Button
+						variant="outline"
+						class="gap-2"
+						:aria-pressed="isBookmarked"
+						@click="onBookmark"
+					>
+						<Bookmark
+							class="w-4 h-4"
+							aria-hidden="true"
+							:class="{ 'fill-current text-primary': isBookmarked }"
+						/>
+						{{ isBookmarked ? 'Bookmarked' : 'Bookmark' }}
+					</Button>
 					<Button
 						variant="outline"
 						class="gap-2"

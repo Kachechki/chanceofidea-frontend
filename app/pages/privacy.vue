@@ -22,7 +22,7 @@ useHead({
         <ul class="list-disc list-inside text-sm text-muted-foreground space-y-1">
           <li><strong>GitHub Account Data:</strong> When you log in via GitHub OAuth, we collect your public GitHub profile information, including your username, avatar URL, profile link, and public email address.</li>
           <li><strong>Repository & Project Data:</strong> Information about projects you list or apply to adopt, including repository URLs, names, descriptions, and metadata imported from GitHub.</li>
-          <li><strong>Activity & Applications:</strong> Information regarding your project applications, messages, favorites, and platform interactions.</li>
+          <li><strong>Activity & Applications:</strong> Information regarding your project applications, messages, bookmarks, and platform interactions.</li>
         </ul>
       </section>
 
