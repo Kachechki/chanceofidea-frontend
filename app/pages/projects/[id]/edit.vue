@@ -16,6 +16,7 @@ import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
 import FieldError from '~/components/FieldError.vue'
 import { errorMessage } from '~/lib/errors'
 import { getProjectFullName } from '~/lib/project'
+import { ProjectStatusEnum } from '~/types/project'
 import {
     LIMITS,
     focusFirstInvalid,
@@ -51,6 +52,7 @@ const form = reactive({
 const errors = ref<ProjectFormErrors>({})
 const attempted = ref(false)
 const serverError = ref('')
+const saving = ref(false)
 
 // the repository cannot change after publishing, so it is not part of the edit form
 const repositoryName = computed(() =>
@@ -96,8 +98,11 @@ const toggleTag = (id: string) => {
         : [...form.tags, id]
 }
 
-const submit = async () => {
-    if (loading.value) return
+const isDraft = computed(() => currentProject.value?.status === ProjectStatusEnum.DRAFT)
+
+// saves the edits, then optionally publishes a draft. the publish step only runs after a successful save.
+const submit = async (publish = false) => {
+    if (loading.value || saving.value) return
 
     attempted.value = true
     errors.value = validateProjectForm(values.value)
@@ -108,6 +113,8 @@ const submit = async () => {
     }
 
     serverError.value = ''
+    saving.value = true
+    let saved = false
     try {
         await $fetch('/api/project', {
             method: 'PATCH',
@@ -120,9 +127,19 @@ const submit = async () => {
                 readiness: form.readinessPercent / 100,
             },
         })
+        saved = true
+        if (publish) {
+            await $fetch('/api/project/publish', {
+                method: 'POST',
+                query: { id: projectId },
+            })
+        }
         await navigateTo(`/projects/${projectId}`)
     } catch (err) {
-        serverError.value = errorMessage(err, 'Failed to update project')
+        const fallback = publish && saved ? 'Changes saved, but publishing failed' : 'Failed to save project'
+        serverError.value = errorMessage(err, fallback)
+    } finally {
+        saving.value = false
     }
 }
 
@@ -328,10 +345,19 @@ const fieldClass =
                         </Button>
                         <Button
                             type="button"
-                            :disabled="loading"
-                            @click="submit"
+                            variant="outline"
+                            :disabled="loading || saving"
+                            @click="submit(false)"
                         >
                             Save changes
+                        </Button>
+                        <Button
+                            v-if="isDraft"
+                            type="button"
+                            :disabled="loading || saving"
+                            @click="submit(true)"
+                        >
+                            {{ saving ? 'Publishing...' : 'Publish' }}
                         </Button>
                     </div>
                 </form>

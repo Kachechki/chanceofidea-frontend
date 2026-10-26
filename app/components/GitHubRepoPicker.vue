@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { parseRepoInput } from '~/lib/validation'
@@ -21,14 +21,6 @@ const { githubRepos, githubReposLoading, githubReposError } = storeToRefs(projec
 const mode = ref<'select' | 'manual'>('select')
 
 onMounted(() => projectsStore.fetchGithubRepos())
-
-// no public repos or a failed load, so fall back to manual entry
-watch(
-	[githubRepos, githubReposLoading, githubReposError],
-	([repos, loading, failed]) => {
-		if (!loading && (repos.length === 0 || failed)) mode.value = 'manual'
-	}
-)
 
 // a pasted github url becomes owner/repo right away
 const onPaste = (event: ClipboardEvent) => {
@@ -76,12 +68,32 @@ const fieldClass =
 				compact
 				size="w-5 h-5"
 			/>
-			<p
+			<div
 				v-else-if="githubReposError"
-				role="alert"
-				class="text-sm text-destructive"
+				role="status"
+				class="flex flex-col gap-2 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
 			>
-				{{ githubReposError }}. You can still enter the repository manually.
+				<p>{{ githubReposError }}</p>
+				<button
+					type="button"
+					class="w-fit text-primary underline underline-offset-4 cursor-pointer"
+					@click="mode = 'manual'"
+				>
+					Enter the repository manually instead
+				</button>
+			</div>
+			<p
+				v-else-if="githubRepos.length === 0"
+				class="text-sm text-muted-foreground"
+			>
+				No public repositories found on your account.
+				<button
+					type="button"
+					class="text-primary underline underline-offset-4 cursor-pointer"
+					@click="mode = 'manual'"
+				>
+					Enter one manually
+				</button>
 			</p>
 			<select
 				v-else

@@ -218,10 +218,12 @@ export const useProjectsStore = defineStore('projects', {
 					.sort((a, b) => a.name.localeCompare(b.name))
 			} catch (err) {
 				this.githubRepos = []
-				this.githubReposError = errorMessage(
-					err,
-					'Failed to load your repositories'
-				)
+				// the backend returns 500 when github rejects the stored token, so treat it like a 401
+				const status = (err as { statusCode?: number })?.statusCode
+				this.githubReposError =
+					status === 401 || status === 403 || status === 500
+						? 'Your GitHub access has expired. Log in again to refresh it, then reload to see your repositories.'
+						: 'Could not load your repositories. Try again later.'
 			} finally {
 				this.githubReposLoading = false
 			}
