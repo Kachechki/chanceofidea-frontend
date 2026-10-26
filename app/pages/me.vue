@@ -286,21 +286,6 @@ const confirmReject = async (reason: string) => {
 							>
 								<Globe class="w-4 h-4" /> Joined {{ joinedDate }}
 							</span>
-							<Button
-								v-if="githubAppSlug"
-								as-child
-								size="sm"
-								variant="outline"
-							>
-								<a
-									:href="`https://github.com/apps/${githubAppSlug}/installations/new`"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Install GitHub app
-									<span class="sr-only">(opens GitHub in a new tab)</span>
-								</a>
-							</Button>
 						</div>
 					</div>
 				</div>
@@ -308,6 +293,20 @@ const confirmReject = async (reason: string) => {
 				<div
 					class="flex items-center gap-4 bg-muted/50 p-4 rounded-xl border border-border"
 				>
+					<Button
+						v-if="githubAppSlug"
+						as-child
+						class="bg-primary text-primary-foreground hover:bg-primary/90"
+					>
+						<a
+							:href="`https://github.com/apps/${githubAppSlug}/installations/new`"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Install GitHub app
+							<span class="sr-only">(opens GitHub in a new tab)</span>
+						</a>
+					</Button>
 					<div class="text-center px-3">
 						<div class="text-xl font-bold text-foreground">
 							{{ publishedCount }}
