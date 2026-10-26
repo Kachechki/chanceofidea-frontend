@@ -3,11 +3,6 @@
 		<Card
 			class="relative overflow-hidden bg-card border-muted-foreground/30 rounded-2xl transition-all hover:border-muted-foreground/60 p-0 focus-within:ring-3 focus-within:ring-ring/50"
 		>
-			<div
-				v-if="bannerClass"
-				:class="['h-12 w-full', bannerClass]"
-				aria-hidden="true"
-			/>
 
 			<CardContent class="p-6 flex flex-col gap-4">
 				<div class="flex items-start justify-between gap-4">
@@ -76,7 +71,6 @@
 							rel="noopener noreferrer"
 							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer inline-flex items-center justify-center"
 							:aria-label="`Open ${project.title} repository on GitHub (opens in a new tab)`"
-							@click="$emit('external', project)"
 						>
 							<ExternalLink class="w-4 h-4" aria-hidden="true" />
 						</a>
@@ -95,11 +89,9 @@ import { useBookmarksStore } from '~/stores/bookmarksStore'
 
 interface Props {
 	project: ProjectEntity
-	bannerClass?: string // Optional top banner styling for featured cards (like the 4th Figma variant)
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	bannerClass: '',
 })
 
 const fullName = computed(() => getProjectFullName(props.project))
@@ -113,9 +105,6 @@ const onBookmark = () => {
 	if (!bookmarks.toggle(props.project)) navigateTo('/login')
 }
 
-defineEmits<{
-	(e: 'external', project: ProjectEntity): void
-}>()
 
 // Map TypeORM status enum to Tailwind background colors for the status dot
 const getStatusColor = (status: ProjectStatusEnum | string) => {

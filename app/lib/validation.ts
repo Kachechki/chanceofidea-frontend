@@ -114,8 +114,6 @@ export interface ProjectFormValues {
 	description: string
 	categoryId: string
 	tags: string[]
-	figmaUrl?: string
-	demoUrl?: string
 }
 
 export type ProjectFormErrors = FieldErrors<keyof ProjectFormValues>
@@ -134,8 +132,6 @@ export const validateProjectForm = (
 		),
 		categoryId: values.categoryId ? '' : 'Category is required',
 		tags: values.tags.length > 0 ? '' : 'At least one tag is required',
-		figmaUrl: validateUrl(values.figmaUrl ?? '', 'Figma URL'),
-		demoUrl: validateUrl(values.demoUrl ?? '', 'Demo video URL'),
 	}
 	if (values.repository !== undefined) {
 		errors.repository = validateRepository(values.repository, ownerLogin)

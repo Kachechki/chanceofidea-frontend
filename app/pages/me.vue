@@ -285,11 +285,11 @@ const confirmReject = async (reason: string) => {
                 You haven't published any side projects. Share your unfinished work with developers who will finish it.
               </p>
             </div>
-            <NuxtLink to="/projects/create">
-              <Button class="mt-2 flex items-center gap-2">
+            <Button as-child class="mt-2 flex items-center gap-2">
+<NuxtLink to="/projects/create">
                 <Plus class="w-4 h-4" /> Publish your first project
-              </Button>
-            </NuxtLink>
+              </NuxtLink>
+</Button>
           </div>
         </div>
 
@@ -317,9 +317,9 @@ const confirmReject = async (reason: string) => {
                 You haven't adopted any projects yet. Browse the catalog to find exciting codebases to continue.
               </p>
             </div>
-            <NuxtLink to="/projects">
-              <Button class="mt-2" variant="outline">Find a project</Button>
-            </NuxtLink>
+            <Button as-child class="mt-2" variant="outline">
+<NuxtLink to="/projects">Find a project</NuxtLink>
+</Button>
           </div>
         </div>
 
@@ -425,9 +425,9 @@ const confirmReject = async (reason: string) => {
                 Bookmark projects while browsing the catalog to come back to them later.
               </p>
             </div>
-            <NuxtLink to="/projects">
-              <Button class="mt-2" variant="outline">Explore catalog</Button>
-            </NuxtLink>
+            <Button as-child class="mt-2" variant="outline">
+<NuxtLink to="/projects">Explore catalog</NuxtLink>
+</Button>
           </div>
         </div>
       </div>

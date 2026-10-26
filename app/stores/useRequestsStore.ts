@@ -185,7 +185,6 @@ export const useRequestsStore = defineStore('requests', {
 
 		async acceptRequest(id: string) {
 			const application = this.incoming.find((a) => a.id === id)
-			console.log('application', application)
 			if (
 				application &&
 				!canTransition(application.status, ApplicationStatusEnum.ACCEPTED)

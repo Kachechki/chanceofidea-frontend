@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { Button } from '~/widgets/ui/button'
 import type { StageCopy } from '~/lib/transfer'

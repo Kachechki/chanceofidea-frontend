@@ -12,7 +12,6 @@ import {
 } from '~/widgets/ui/card'
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
-import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
 import GitHubRepoPicker from '~/components/GitHubRepoPicker.vue'
 import FieldError from '~/components/FieldError.vue'
 import { errorMessage } from '~/lib/errors'
@@ -40,11 +39,6 @@ const form = reactive({
     categoryId: '',
     tags: [] as string[],
     readinessPercent: 50,
-    media: {
-        files: [] as File[],
-        figmaUrl: '',
-        demoUrl: '',
-    },
 })
 
 const errors = ref<ProjectFormErrors>({})
@@ -57,8 +51,6 @@ const values = computed<ProjectFormValues>(() => ({
     description: form.description,
     categoryId: form.categoryId,
     tags: form.tags,
-    figmaUrl: form.media.figmaUrl,
-    demoUrl: form.media.demoUrl,
 }))
 
 // after the first submit attempt, errors follow the fields as the user types
@@ -310,24 +302,6 @@ const fieldClass =
                         />
                     </div>
 
-                    <!-- not yet for the mvp -->
-                    <!--<div class="flex flex-col gap-1.5 pt-2 border-t border-border">
-                        <span
-                            id="create-media-label"
-                            class="text-sm font-medium text-foreground mb-1"
-                        >
-                            Media &amp; External Links
-                        </span>
-                        <div
-                            role="group"
-                            aria-labelledby="create-media-label"
-                        >
-                            <ProjectMediaUpload
-                                v-model="form.media"
-                                :errors="{ figmaUrl: errors.figmaUrl, demoUrl: errors.demoUrl }"
-                            />
-                        </div>
-                    </div>-->
 
                     <p
                         v-if="serverError"

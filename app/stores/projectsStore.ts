@@ -85,14 +85,6 @@ export const useProjectsStore = defineStore('projects', {
 	},
 
 	actions: {
-		getProjectById(id: string): ProjectEntity | undefined {
-			return (
-				(this.currentProject?.id === id ? this.currentProject : undefined) ??
-				this.projects.find((p) => p.id === id) ??
-				this.myProjects.find((p) => p.id === id)
-			)
-		},
-
 		buildFilterQuery(page = 1) {
 			const category = this.categories.find(
 				(c) => c.id === this.selectedCategoryId && c.id !== ALL_CATEGORY_ID

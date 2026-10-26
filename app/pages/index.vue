@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Clock, FileBox, HeartHandshake, Package, Users } from '@lucide/vue'
-import Header from '~/widgets/Header.vue'
 import { Button } from '~/widgets/ui/button'
 import { Info } from '@lucide/vue'
 import { Upload } from '@lucide/vue'
@@ -96,8 +95,7 @@ const { user, ready } = useAuth()
 						Not sure where to start?
 					</h3>
 					<p class="text-muted-foreground">
-						Browse featured projects or read contributor tips to pick the right
-						fit.
+						Browse the catalog to see what others have published, then pick the one that fits.
 					</p>
 				</div>
 			</CardContent>

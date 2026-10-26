@@ -12,7 +12,6 @@ import {
 } from '~/widgets/ui/card'
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
-import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
 import DeleteProjectModal from '~/components/modals/DeleteProjectModal.vue'
 import { useRequestsStore } from '~/stores/useRequestsStore'
 import FieldError from '~/components/FieldError.vue'
@@ -45,11 +44,6 @@ const form = reactive({
     categoryId: '',
     tags: [] as string[],
     readinessPercent: 50,
-    media: {
-        files: [] as File[],
-        figmaUrl: '',
-        demoUrl: '',
-    },
 })
 
 const errors = ref<ProjectFormErrors>({})
@@ -67,8 +61,6 @@ const values = computed<ProjectFormValues>(() => ({
     description: form.description,
     categoryId: form.categoryId,
     tags: form.tags,
-    figmaUrl: form.media.figmaUrl,
-    demoUrl: form.media.demoUrl,
 }))
 
 watch(
@@ -252,7 +244,7 @@ const fieldClass =
             <CardHeader>
                 <CardTitle class="text-2xl">Edit project</CardTitle>
                 <CardDescription>
-                    Update your project details and media assets.
+                    Update your project details.
                 </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
@@ -402,24 +394,6 @@ const fieldClass =
                         />
                     </div>
 
-                    <!-- not yet for the mvp -->
-                    <!--<div class="flex flex-col gap-1.5 pt-2 border-t border-border">
-                        <span
-                            id="edit-media-label"
-                            class="text-sm font-medium text-foreground mb-1"
-                        >
-                            Media &amp; External Links
-                        </span>
-                        <div
-                            role="group"
-                            aria-labelledby="edit-media-label"
-                        >
-                            <ProjectMediaUpload
-                                v-model="form.media"
-                                :errors="{ figmaUrl: errors.figmaUrl, demoUrl: errors.demoUrl }"
-                            />
-                        </div>
-                    </div>-->
 
                     <p
                         v-if="serverError"

@@ -250,13 +250,6 @@ onMounted(async () => {
 							<span :class="['w-2 h-2 rounded-full', statusStyle.dot]" />
 							{{ statusStyle.label }}
 						</span>
-						<!--<span
-							v-if="project.category"
-							class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
-						>
-							<Folder class="w-3.5 h-3.5" />
-							{{ project.category.name }}
-						</span>-->
 					</div>
 
 					<h1
