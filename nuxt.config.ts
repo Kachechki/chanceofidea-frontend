@@ -12,11 +12,13 @@ export default defineNuxtConfig({
 		componentDir: 'app/widgets/ui',
 	},
 	runtimeConfig: {
-		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000', 
+		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000',
 		public: {
 			githubClientId:
 				process.env.NUXT_PUBLIC_GITHUB_CLIENT_ID || 'Iv23liABRK4YkqMNZDM8',
 			apiBase: process.env.NUXT_PUBLIC_API_BASE,
+			githubAppSlug:
+				process.env.NUXT_PUBLIC_GITHUB_APP_SLUG || 'chanceofidea-dev-auth',
 		},
 	},
 	future: {

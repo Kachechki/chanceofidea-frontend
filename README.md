@@ -35,6 +35,7 @@ so you can change them without rebuilding:
 | ------------------------------ | ----------------------------------------------------------------- |
 | `NUXT_BACKEND_URL`             | Base URL of the backend API (defaults to `http://localhost:4000`) |
 | `NUXT_PUBLIC_GITHUB_CLIENT_ID` | GitHub OAuth App client ID used for the sign-in redirect          |
+| `NUXT_PUBLIC_GITHUB_APP_SLUG`  | GitHub App slug (the name in `github.com/apps/<slug>`), used for the install link |
 
 Configure the GitHub OAuth App's callback URL to point at the frontend, not the
 backend: `http://localhost:3000/auth/callback` for local development, or
@@ -152,6 +153,13 @@ cards, and the profile.
 2. GitHub sends the applicant a transfer request, which they accept on GitHub.
 3. The applicant confirms receipt in the app, or declines. Confirming marks the
    project `ADOPTED`. Declining returns it to `PUBLISHED`.
+
+Transfers need the GitHub App installed on the owner's account, with the repository
+selected. Authorizing the app is not enough. On the profile page, use the **Install
+GitHub app** button before accepting an applicant. The button stays visible after
+installing, so it can also be used to change which repositories the app can access.
+In the app's settings, set the Setup URL to `https://<your-domain>/me` so GitHub
+returns to the profile after installing.
 
 ## Quality checks
 
