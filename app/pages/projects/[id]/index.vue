@@ -17,6 +17,7 @@ import { useRequestsStore } from '~/stores/useRequestsStore'
 import AdoptionModal from '~/components/modals/AdoptionModal.vue'
 import { getProjectFullName, getProjectRepoUrl } from '~/lib/project'
 import { ProjectStatusEnum } from '~/types/project'
+import { projectBanner } from '~/lib/transfer'
 import { ApplicationStatusEnum } from '~/types/application'
 
 const projectsStore = useProjectsStore()
@@ -49,6 +50,46 @@ const isOwner = computed(
 
 const myApplication = computed(() =>
 	project.value ? requestsStore.activeForProject(project.value.id) : undefined
+)
+
+// the owner needs the applications on this project to know who is taking it over
+watch(isOwner, (owner) => {
+	if (owner) requestsStore.fetchIncoming()
+})
+
+// the accepted application for this project, from the owner's or the applicant's side
+const acceptedApplication = computed(() => {
+	if (!project.value) return undefined
+	if (isOwner.value) {
+		return requestsStore.incoming.find(
+			(a) =>
+				a.project?.id === project.value?.id &&
+				a.status === ApplicationStatusEnum.ACCEPTED
+		)
+	}
+	return myApplication.value?.status === ApplicationStatusEnum.ACCEPTED
+		? myApplication.value
+		: undefined
+})
+
+// the applicant's latest rejected request, shown only when they have no active one
+const lastRejected = computed(() => {
+	if (!project.value || myApplication.value) return undefined
+	return requestsStore.outgoing.find(
+		(a) =>
+			a.project?.id === project.value?.id &&
+			a.status === ApplicationStatusEnum.REJECTED
+	)
+})
+
+const banner = computed(() =>
+	project.value
+		? projectBanner(project.value, {
+				isOwner: isOwner.value,
+				accepted: acceptedApplication.value,
+				lastRejected: lastRejected.value,
+			})
+		: null
 )
 
 // what the Apply button shows for the current viewer
@@ -250,6 +291,13 @@ onMounted(async () => {
 				</div>
 			</div>
 		</section>
+
+		<StatusBanner
+			v-if="banner"
+			:variant="banner.variant"
+			:title="banner.title"
+			:steps="banner.steps"
+		/>
 
 		<!-- BODY -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

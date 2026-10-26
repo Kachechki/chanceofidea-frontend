@@ -2,8 +2,12 @@
 import { computed } from 'vue'
 import { Card, CardContent } from '~/widgets/ui/card'
 import { Button } from '~/widgets/ui/button'
+import type { StageCopy } from '~/lib/transfer'
+import StatusBanner from '~/components/StatusBanner.vue'
 
 export interface AdoptionRequestEntity {
+    // next-step banner, set for every request past the pending step
+    transfer?: StageCopy
     id: string
     createdAt: string
     status: 'Pending' | 'Accepted' | 'Rejected' | string
@@ -66,6 +70,13 @@ const getStatusBadgeClass = (status: string) => {
                     {{ request.status }}
                 </span>
             </div>
+
+            <StatusBanner
+                v-if="request.transfer"
+                :variant="request.transfer.variant"
+                :title="request.transfer.title"
+                :steps="request.transfer.steps"
+            />
 
             <div class="flex flex-col gap-3 text-sm">
                 <div>

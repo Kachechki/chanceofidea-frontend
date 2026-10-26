@@ -2,14 +2,16 @@
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
-  Package, HeartHandshake, Bookmark, FileText, Plus, Globe
+  Package, HeartHandshake, Bookmark, FileText, Plus, Globe, Clock
 } from '@lucide/vue'
 import { Button } from '~/widgets/ui/button'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
 import type { ApplicationEntity } from '~/types/application'
+import { useRoute } from 'vue-router'
 import AcceptTransferModal from '~/components/modals/AcceptTransferModal.vue'
+import TransferActionModal from '~/components/modals/TransferActionModal.vue'
 import RejectApplicationModal from '~/components/modals/RejectApplicationModal.vue'
 
 const { user, ready } = useAuth()
@@ -20,9 +22,11 @@ const projectsStore = useProjectsStore()
 const { myProjects, loading: projectsLoading, error: projectsError } = storeToRefs(projectsStore)
 
 const requestsStore = useRequestsStore()
-const { incomingRequests, outgoingRequests } = storeToRefs(requestsStore)
+const { incomingRequests, outgoingRequests, applicantTransfers } = storeToRefs(requestsStore)
 
-const activeTab = ref<'created' | 'adopted' | 'requests' | 'favorites'>('created')
+type ProfileTab = 'created' | 'adopted' | 'requests' | 'transfers' | 'favorites'
+const route = useRoute()
+const activeTab = ref<ProfileTab>(route.query.tab === 'transfers' ? 'transfers' : 'created')
 
 watch(
   () => user.value?.id,
@@ -89,6 +93,39 @@ const confirmAccept = async () => {
     acceptError.value = requestsStore.error ?? 'Failed to accept application'
   } finally {
     acceptSubmitting.value = false
+  }
+}
+
+// the applicant's transfer actions: confirm receipt or decline. one dialog for both.
+const transferTarget = ref<ApplicationEntity | null>(null)
+const transferMode = ref<'confirm' | 'decline'>('confirm')
+const transferSubmitting = ref(false)
+const transferError = ref('')
+
+const openTransfer = (application: ApplicationEntity, mode: 'confirm' | 'decline') => {
+  transferError.value = ''
+  transferMode.value = mode
+  transferTarget.value = application
+}
+
+const closeTransfer = () => {
+  if (transferSubmitting.value) return
+  transferTarget.value = null
+}
+
+const confirmTransfer = async () => {
+  transferSubmitting.value = true
+  transferError.value = ''
+  try {
+    if (transferMode.value === 'confirm') await requestsStore.confirmReceived()
+    else await requestsStore.declineTransfer()
+    transferTarget.value = null
+    // a confirmed transfer changes the project to adopted, so refresh the project lists
+    projectsStore.fetchMyProjects()
+  } catch {
+    transferError.value = requestsStore.error ?? 'Could not complete the action'
+  } finally {
+    transferSubmitting.value = false
   }
 }
 
@@ -239,6 +276,22 @@ const handleWrite = (applicantId: string) => {
         </button>
 
         <button
+          id="tab-transfers"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'transfers'"
+          aria-controls="profile-panel"
+          :tabindex="activeTab === 'transfers' ? 0 : -1"
+          :class="tabClass('transfers')"
+          @click="activeTab = 'transfers'"
+        >
+          <Clock class="w-4 h-4" aria-hidden="true" /> Transfers
+          <span class="ml-1 px-1.5 py-0.5 text-xs bg-muted rounded-full text-foreground">
+            {{ applicantTransfers.length }}
+          </span>
+        </button>
+
+        <button
           id="tab-favorites"
           type="button"
           role="tab"
@@ -354,6 +407,37 @@ const handleWrite = (applicantId: string) => {
           </div>
         </div>
 
+        <div v-if="activeTab === 'transfers'" class="flex flex-col gap-4">
+          <p class="text-sm text-muted-foreground">
+            Repositories the owners have handed to you. Accept each transfer on GitHub first, then confirm here.
+          </p>
+          <ul
+            v-if="applicantTransfers.length > 0"
+            aria-label="Your transfers"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <li
+              v-for="application in applicantTransfers"
+              :key="application.id"
+            >
+              <TransferCard
+                :application="application"
+                @confirm="openTransfer(application, 'confirm')"
+                @decline="openTransfer(application, 'decline')"
+              />
+            </li>
+          </ul>
+          <div
+            v-else
+            class="flex flex-col items-center justify-center py-16 gap-2 border border-dashed border-border rounded-2xl bg-card/50 text-center"
+          >
+            <h3 class="font-semibold text-lg text-foreground">No transfers waiting</h3>
+            <p class="text-sm text-muted-foreground max-w-sm">
+              When an owner accepts your application, the transfer appears here with the steps to take.
+            </p>
+          </div>
+        </div>
+
         <div v-if="activeTab === 'favorites'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
           <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <Bookmark class="w-6 h-6" />
@@ -380,6 +464,17 @@ const handleWrite = (applicantId: string) => {
       :error="acceptError"
       @close="closeAccept"
       @confirm="confirmAccept"
+    />
+
+    <TransferActionModal
+      :is-open="!!transferTarget"
+      :mode="transferMode"
+      :owner-login="transferTarget?.project?.owner?.login ?? ''"
+      :repo-name="transferTarget?.project?.repositoryName ?? ''"
+      :is-loading="transferSubmitting"
+      :error="transferError"
+      @close="closeTransfer"
+      @confirm="confirmTransfer"
     />
 
     <RejectApplicationModal

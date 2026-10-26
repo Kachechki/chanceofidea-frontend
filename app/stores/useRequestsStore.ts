@@ -8,6 +8,7 @@ import {
 	type CreateApplicationInput,
 } from '~/types/application'
 import type { AdoptionRequestEntity } from '~/components/RequestCard.vue'
+import { applicationStage, stageCopy } from '~/lib/transfer'
 
 const STATUS_LABEL: Record<
 	ApplicationStatusEnum,
@@ -24,9 +25,24 @@ const STATUS_LABEL: Record<
 const toRequestView = (
 	application: ApplicationEntity,
 	mode: 'incoming' | 'outgoing'
-): AdoptionRequestEntity => ({
+): AdoptionRequestEntity => {
+	const viewer = mode === 'incoming' ? 'owner' : 'applicant'
+	const applicantLogin = application.applicant?.login ?? ''
+	const ownerLogin = application.project?.owner?.login ?? ''
+
+	return {
 	id: application.id,
 	repoName: mode === 'incoming' ? application.project?.repositoryName : undefined,
+	// pending requests already show accept/reject, so only later stages get a banner
+	transfer:
+		application.status === ApplicationStatusEnum.PENDING
+			? undefined
+			: stageCopy(applicationStage(application, viewer), {
+					viewer,
+					applicantLogin,
+					ownerLogin,
+					reason: application.rejectReason,
+				}),
 	createdAt: new Date(application.createdAt).toLocaleDateString('uk-UA'),
 	status: STATUS_LABEL[application.status],
 	whyMe: application.whyMe,
@@ -44,7 +60,8 @@ const toRequestView = (
 					name: application.project?.title ?? 'Unknown project',
 					avatar: application.project?.owner?.avatarUrl,
 				},
-})
+	}
+}
 
 export const useRequestsStore = defineStore('requests', {
 	state: () => ({
@@ -63,6 +80,13 @@ export const useRequestsStore = defineStore('requests', {
 
 		outgoingRequests(state): AdoptionRequestEntity[] {
 			return state.outgoing.map((a) => toRequestView(a, 'outgoing'))
+		},
+
+		// accepted applications I sent, which are the transfers waiting on me
+		applicantTransfers(state): ApplicationEntity[] {
+			return state.outgoing.filter(
+				(a) => a.status === ApplicationStatusEnum.ACCEPTED
+			)
 		},
 
 		// my non-rejected application for a project, if any
@@ -123,6 +147,34 @@ export const useRequestsStore = defineStore('requests', {
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to send application')
+				throw err
+			}
+			await this.fetchOutgoing()
+		},
+
+		// the applicant received the repo on github. the backend checks github before it records this
+		async confirmReceived() {
+			this.error = null
+			try {
+				await $fetch('/api/transfer-session/i-have-recieved', {
+					method: 'POST',
+				})
+			} catch (err) {
+				this.error = errorMessage(err, 'Could not confirm the transfer')
+				throw err
+			}
+			await this.fetchOutgoing()
+		},
+
+		// the applicant does not want the repo. the project goes back to its owner
+		async declineTransfer() {
+			this.error = null
+			try {
+				await $fetch('/api/transfer-session/i-dont-want', {
+					method: 'POST',
+				})
+			} catch (err) {
+				this.error = errorMessage(err, 'Could not decline the transfer')
 				throw err
 			}
 			await this.fetchOutgoing()
