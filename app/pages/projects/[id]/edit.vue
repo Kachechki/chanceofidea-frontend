@@ -13,6 +13,8 @@ import {
 import { Input } from '~/components/ui/input'
 import { useProjectsStore } from '~/stores/projectsStore'
 import ProjectMediaUpload from '~/components/ProjectMediaUpload.vue'
+import DeleteProjectModal from '~/components/modals/DeleteProjectModal.vue'
+import { useRequestsStore } from '~/stores/useRequestsStore'
 import FieldError from '~/components/FieldError.vue'
 import { errorMessage } from '~/lib/errors'
 import { getProjectFullName } from '~/lib/project'
@@ -34,6 +36,7 @@ const { user, ready } = useAuth()
 useHead({ title: 'Edit Project' })
 
 const projectsStore = useProjectsStore()
+const requestsStore = useRequestsStore()
 const { currentProject, selectableCategories, tags, loading } = storeToRefs(projectsStore)
 
 const form = reactive({
@@ -99,6 +102,54 @@ const toggleTag = (id: string) => {
 }
 
 const isDraft = computed(() => currentProject.value?.status === ProjectStatusEnum.DRAFT)
+
+// deleting a draft: typed confirmation, same pattern as accepting a transfer
+const deleteOpen = ref(false)
+const deleting = ref(false)
+const deleteError = ref('')
+
+const isPublished = computed(() => currentProject.value?.status === ProjectStatusEnum.PUBLISHED)
+const canDelete = computed(() => isDraft.value || isPublished.value)
+
+// null until counted. a published project's applications cascade-delete with it, so count them first.
+const applicationCount = ref<number | null>(null)
+
+const openDelete = async () => {
+    deleteError.value = ''
+    applicationCount.value = null
+    deleteOpen.value = true
+
+    if (!isPublished.value) {
+        applicationCount.value = 0
+        return
+    }
+
+    await requestsStore.fetchIncoming()
+    if (requestsStore.error) return
+    applicationCount.value = requestsStore.incoming.filter((a) => a.project?.id === projectId).length
+}
+
+const closeDelete = () => {
+    if (deleting.value) return
+    deleteOpen.value = false
+}
+
+const confirmDelete = async () => {
+    deleting.value = true
+    deleteError.value = ''
+    try {
+        await $fetch('/api/project', {
+            method: 'DELETE',
+            query: { id: projectId },
+        })
+        deleteOpen.value = false
+        await navigateTo('/me')
+    } catch (err) {
+        deleteError.value = errorMessage(err, 'Failed to delete project')
+    } finally {
+        deleting.value = false
+    }
+}
 
 // saves the edits, then optionally publishes a draft. the publish step only runs after a successful save.
 const submit = async (publish = false) => {
@@ -336,32 +387,56 @@ const fieldClass =
                         {{ serverError }}
                     </p>
 
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
+                    <div class="flex items-center justify-between gap-3 pt-4 border-t border-border">
                         <Button
-                            as-child
-                            variant="outline"
-                        >
-                            <NuxtLink :to="`/projects/${projectId}`">Cancel</NuxtLink>
-                        </Button>
-                        <Button
+                            v-if="canDelete"
                             type="button"
-                            variant="outline"
+                            variant="ghost"
+                            class="text-destructive hover:text-destructive hover:bg-destructive/10"
                             :disabled="loading || saving"
-                            @click="submit(false)"
+                            @click="openDelete"
                         >
-                            Save changes
+                            Delete project
                         </Button>
-                        <Button
-                            v-if="isDraft"
-                            type="button"
-                            :disabled="loading || saving"
-                            @click="submit(true)"
-                        >
-                            {{ saving ? 'Publishing...' : 'Publish' }}
-                        </Button>
+                        <div class="ml-auto flex items-center gap-3">
+                            <Button
+                                as-child
+                                variant="outline"
+                            >
+                                <NuxtLink :to="`/projects/${projectId}`">Cancel</NuxtLink>
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                :disabled="loading || saving"
+                                @click="submit(false)"
+                            >
+                                Save changes
+                            </Button>
+                            <Button
+                                v-if="isDraft"
+                                type="button"
+                                :disabled="loading || saving"
+                                @click="submit(true)"
+                            >
+                                {{ saving ? 'Publishing...' : 'Publish' }}
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </CardContent>
         </Card>
+
+        <DeleteProjectModal
+            :is-open="deleteOpen"
+            :project-title="currentProject?.title ?? ''"
+            :repo-name="currentProject?.repositoryName ?? ''"
+            :is-published="isPublished"
+            :application-count="applicationCount"
+            :is-loading="deleting"
+            :error="deleteError"
+            @close="closeDelete"
+            @confirm="confirmDelete"
+        />
     </div>
 </template>
