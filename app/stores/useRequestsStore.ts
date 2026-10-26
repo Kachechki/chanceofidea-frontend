@@ -31,35 +31,36 @@ const toRequestView = (
 	const ownerLogin = application.project?.owner?.login ?? ''
 
 	return {
-	id: application.id,
-	repoName: mode === 'incoming' ? application.project?.repositoryName : undefined,
-	// pending requests already show accept/reject, so only later stages get a banner
-	transfer:
-		application.status === ApplicationStatusEnum.PENDING
-			? undefined
-			: stageCopy(applicationStage(application, viewer), {
-					viewer,
-					applicantLogin,
-					ownerLogin,
-					reason: application.rejectReason,
-				}),
-	createdAt: new Date(application.createdAt).toLocaleDateString('uk-UA'),
-	status: STATUS_LABEL[application.status],
-	whyMe: application.whyMe,
-	actionPlan: application.plan ?? '',
-	portfolioUrl: application.portflioUrl ?? '',
-	applicant:
-		mode === 'incoming'
-			? {
-					id: application.applicant?.id ?? '',
-					name: application.applicant?.login ?? 'unknown',
-					avatar: application.applicant?.avatarUrl,
-				}
-			: {
-					id: application.project?.id ?? '',
-					name: application.project?.title ?? 'Unknown project',
-					avatar: application.project?.owner?.avatarUrl,
-				},
+		id: application.id,
+		repoName:
+			mode === 'incoming' ? application.project?.repositoryName : undefined,
+		// pending requests already show accept/reject, so only later stages get a banner
+		transfer:
+			application.status === ApplicationStatusEnum.PENDING
+				? undefined
+				: stageCopy(applicationStage(application, viewer), {
+						viewer,
+						applicantLogin,
+						ownerLogin,
+						reason: application.rejectReason,
+					}),
+		createdAt: new Date(application.createdAt).toLocaleDateString('uk-UA'),
+		status: STATUS_LABEL[application.status],
+		whyMe: application.whyMe,
+		actionPlan: application.plan ?? '',
+		portfolioUrl: application.portflioUrl ?? '',
+		applicant:
+			mode === 'incoming'
+				? {
+						id: application.applicant?.id ?? '',
+						name: application.applicant?.login ?? 'unknown',
+						avatar: application.applicant?.avatarUrl,
+					}
+				: {
+						id: application.project?.id ?? '',
+						name: application.project?.title ?? 'Unknown project',
+						avatar: application.project?.owner?.avatarUrl,
+					},
 	}
 }
 
@@ -184,6 +185,7 @@ export const useRequestsStore = defineStore('requests', {
 
 		async acceptRequest(id: string) {
 			const application = this.incoming.find((a) => a.id === id)
+			console.log('application', application)
 			if (
 				application &&
 				!canTransition(application.status, ApplicationStatusEnum.ACCEPTED)
