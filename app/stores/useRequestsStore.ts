@@ -153,11 +153,12 @@ export const useRequestsStore = defineStore('requests', {
 		},
 
 		// the applicant received the repo on github. the backend checks github before it records this
-		async confirmReceived() {
+		async confirmReceived(applicationId: string) {
 			this.error = null
 			try {
 				await $fetch('/api/transfer-session/i-have-recieved', {
 					method: 'POST',
+					query: { applicationId },
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Could not confirm the transfer')
@@ -167,11 +168,12 @@ export const useRequestsStore = defineStore('requests', {
 		},
 
 		// the applicant does not want the repo. the project goes back to its owner
-		async declineTransfer() {
+		async declineTransfer(applicationId: string) {
 			this.error = null
 			try {
 				await $fetch('/api/transfer-session/i-dont-want', {
 					method: 'POST',
+					query: { applicationId },
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Could not decline the transfer')
@@ -191,9 +193,13 @@ export const useRequestsStore = defineStore('requests', {
 
 			this.error = null
 			try {
+				// the deployed guard still reads the project id from the query
 				await $fetch('/api/application/accept', {
 					method: 'POST',
-					query: { applicationId: id },
+					query: {
+						applicationId: id,
+						id: application?.project?.id,
+					},
 				})
 			} catch (err) {
 				this.error = errorMessage(err, 'Failed to accept application')
@@ -215,7 +221,10 @@ export const useRequestsStore = defineStore('requests', {
 			try {
 				await $fetch('/api/application/reject', {
 					method: 'POST',
-					query: { applicationId: id },
+					query: {
+						applicationId: id,
+						id: application?.project?.id,
+					},
 					body: { rejectReason: reason },
 				})
 			} catch (err) {

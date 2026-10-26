@@ -117,8 +117,9 @@ const confirmTransfer = async () => {
   transferSubmitting.value = true
   transferError.value = ''
   try {
-    if (transferMode.value === 'confirm') await requestsStore.confirmReceived()
-    else await requestsStore.declineTransfer()
+    const applicationId = transferTarget.value?.id ?? ''
+    if (transferMode.value === 'confirm') await requestsStore.confirmReceived(applicationId)
+    else await requestsStore.declineTransfer(applicationId)
     transferTarget.value = null
     // a confirmed transfer changes the project to adopted, so refresh the project lists
     projectsStore.fetchMyProjects()
