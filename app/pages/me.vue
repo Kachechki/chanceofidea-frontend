@@ -8,9 +8,9 @@ import { Button } from '~/widgets/ui/button'
 import { ProjectStatusEnum, type ProjectEntity } from '~/types/project'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
-import { LIMITS, validateText } from '~/lib/validation'
 import type { ApplicationEntity } from '~/types/application'
 import AcceptTransferModal from '~/components/modals/AcceptTransferModal.vue'
+import RejectApplicationModal from '~/components/modals/RejectApplicationModal.vue'
 
 const { user, ready } = useAuth()
 
@@ -92,21 +92,34 @@ const confirmAccept = async () => {
   }
 }
 
-const handleReject = async (id: string) => {
-  const input = window.prompt('Reason shown to the applicant:')
-  if (input === null) return
+// the reject dialog, opened with the application being rejected
+const rejectTarget = ref<ApplicationEntity | null>(null)
+const rejectSubmitting = ref(false)
+const rejectError = ref('')
 
-  const reason = input.trim()
-  const reasonError = validateText(reason, 'Reason', LIMITS.rejectReason)
-  if (reasonError) {
-    requestsStore.error = reasonError
-    return
-  }
+const openReject = (id: string) => {
+  const application = requestsStore.incoming.find((a) => a.id === id)
+  if (!application) return
+  rejectError.value = ''
+  rejectTarget.value = application
+}
 
+const closeReject = () => {
+  if (rejectSubmitting.value) return
+  rejectTarget.value = null
+}
+
+const confirmReject = async (reason: string) => {
+  if (!rejectTarget.value) return
+  rejectSubmitting.value = true
+  rejectError.value = ''
   try {
-    await requestsStore.rejectRequest(id, reason)
+    await requestsStore.rejectRequest(rejectTarget.value.id, reason)
+    rejectTarget.value = null
   } catch {
-    // the store keeps the message in `error`
+    rejectError.value = requestsStore.error ?? 'Failed to reject application'
+  } finally {
+    rejectSubmitting.value = false
   }
 }
 
@@ -308,7 +321,7 @@ const handleWrite = (applicantId: string) => {
                 :request="req"
                 :is-author-view="true"
                 @accept="openAccept"
-                @reject="handleReject"
+                @reject="openReject"
                 @write="handleWrite"
               />
             </div>
@@ -367,6 +380,16 @@ const handleWrite = (applicantId: string) => {
       :error="acceptError"
       @close="closeAccept"
       @confirm="confirmAccept"
+    />
+
+    <RejectApplicationModal
+      :is-open="!!rejectTarget"
+      :applicant-login="rejectTarget?.applicant?.login ?? ''"
+      :project-title="rejectTarget?.project?.title ?? ''"
+      :is-loading="rejectSubmitting"
+      :error="rejectError"
+      @close="closeReject"
+      @confirm="confirmReject"
     />
   </div>
 </template>
