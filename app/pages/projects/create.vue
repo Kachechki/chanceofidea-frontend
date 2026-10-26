@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { Button } from '~/widgets/ui/button'
 import {
@@ -69,10 +70,31 @@ watch(
     { deep: true }
 )
 
+// unsaved changes: compare the form with the state it started from
+const snapshot = ref('')
+const currentState = () => JSON.stringify({ ...values.value, readiness: form.readinessPercent })
+const isDirty = computed(() => snapshot.value !== '' && snapshot.value !== currentState())
+let allowLeave = false
+
+onBeforeRouteLeave(() => {
+    if (allowLeave || !isDirty.value) return true
+    return window.confirm('You have unsaved changes. Leave this page anyway?')
+})
+
+const warnOnUnload = (event: BeforeUnloadEvent) => {
+    if (!isDirty.value || allowLeave) return
+    event.preventDefault()
+    event.returnValue = ''
+}
+
 onMounted(() => {
     projectsStore.fetchCategories()
     projectsStore.fetchTags()
+    snapshot.value = currentState()
+    window.addEventListener('beforeunload', warnOnUnload)
 })
+
+onBeforeUnmount(() => window.removeEventListener('beforeunload', warnOnUnload))
 
 const toggleTag = (id: string) => {
     form.tags = form.tags.includes(id)
@@ -102,6 +124,7 @@ const submit = async (publish: boolean) => {
             publish,
             readiness: form.readinessPercent / 100,
         })
+        allowLeave = true
         await navigateTo('/me')
     } catch (err) {
         serverError.value = errorMessage(err, 'Failed to save project')

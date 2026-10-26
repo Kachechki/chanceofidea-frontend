@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { Button } from '~/widgets/ui/button'
 import {
     Card,
@@ -79,6 +79,25 @@ watch(
     { deep: true }
 )
 
+// unsaved changes: compare the form with the state it loaded with
+const snapshot = ref('')
+const currentState = () => JSON.stringify({ ...values.value, readiness: form.readinessPercent })
+const isDirty = computed(() => snapshot.value !== '' && snapshot.value !== currentState())
+let allowLeave = false
+
+onBeforeRouteLeave(() => {
+    if (allowLeave || !isDirty.value) return true
+    return window.confirm('You have unsaved changes. Leave this page anyway?')
+})
+
+const warnOnUnload = (event: BeforeUnloadEvent) => {
+    if (!isDirty.value || allowLeave) return
+    event.preventDefault()
+    event.returnValue = ''
+}
+
+onBeforeUnmount(() => window.removeEventListener('beforeunload', warnOnUnload))
+
 onMounted(async () => {
     await Promise.all([
         projectsStore.fetchCategories(),
@@ -93,6 +112,9 @@ onMounted(async () => {
         form.tags = currentProject.value.tags?.map((t) => t.id) || []
         form.readinessPercent = Math.round((currentProject.value.readiness || 0.5) * 100)
     }
+
+    snapshot.value = currentState()
+    window.addEventListener('beforeunload', warnOnUnload)
 })
 
 const toggleTag = (id: string) => {
@@ -110,6 +132,12 @@ const deleteError = ref('')
 
 const isPublished = computed(() => currentProject.value?.status === ProjectStatusEnum.PUBLISHED)
 const canDelete = computed(() => isDraft.value || isPublished.value)
+
+// a project that is being transferred or already adopted cannot be edited
+const isLocked = computed(() => {
+    const status = currentProject.value?.status
+    return status === ProjectStatusEnum.TRANSFERRING || status === ProjectStatusEnum.ADOPTED
+})
 
 // null until counted. a published project's applications cascade-delete with it, so count them first.
 const applicationCount = ref<number | null>(null)
@@ -143,6 +171,7 @@ const confirmDelete = async () => {
             query: { id: projectId },
         })
         deleteOpen.value = false
+        allowLeave = true
         await navigateTo('/me')
     } catch (err) {
         deleteError.value = errorMessage(err, 'Failed to delete project')
@@ -185,6 +214,7 @@ const submit = async (publish = false) => {
                 query: { id: projectId },
             })
         }
+        allowLeave = true
         await navigateTo(`/projects/${projectId}`)
     } catch (err) {
         const fallback = publish && saved ? 'Changes saved, but publishing failed' : 'Failed to save project'
@@ -231,6 +261,18 @@ const fieldClass =
                     novalidate
                     @submit.prevent
                 >
+                    <p
+                        v-if="isLocked"
+                        role="status"
+                        class="rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
+                    >
+                        This project is being transferred or has been adopted, so it can't be edited right now.
+                    </p>
+
+                    <fieldset
+                        :disabled="isLocked"
+                        class="contents"
+                    >
                     <div class="flex flex-col gap-1.5">
                         <label
                             for="title"
@@ -393,7 +435,7 @@ const fieldClass =
                             type="button"
                             variant="ghost"
                             class="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            :disabled="loading || saving"
+                            :disabled="loading || saving || isLocked"
                             @click="openDelete"
                         >
                             Delete project
@@ -408,7 +450,7 @@ const fieldClass =
                             <Button
                                 type="button"
                                 variant="outline"
-                                :disabled="loading || saving"
+                                :disabled="loading || saving || isLocked"
                                 @click="submit(false)"
                             >
                                 Save changes
@@ -416,13 +458,14 @@ const fieldClass =
                             <Button
                                 v-if="isDraft"
                                 type="button"
-                                :disabled="loading || saving"
+                                :disabled="loading || saving || isLocked"
                                 @click="submit(true)"
                             >
                                 {{ saving ? 'Publishing...' : 'Publish' }}
                             </Button>
                         </div>
                     </div>
+                    </fieldset>
                 </form>
             </CardContent>
         </Card>

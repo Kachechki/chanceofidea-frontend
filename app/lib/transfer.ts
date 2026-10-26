@@ -16,6 +16,7 @@ export type TransferStage =
 	| 'declined'
 	| 'failed'
 	| 'rejected'
+	| 'closed'
 
 export interface StageCopy {
 	variant: 'info' | 'warning' | 'success' | 'danger' | 'neutral'
@@ -38,6 +39,9 @@ export const applicationStage = (
 	}
 
 	if (application.project?.status === ProjectStatusEnum.ADOPTED) return 'adopted'
+	// accepted, but the project is no longer transferring (e.g. a decline reset it)
+	if (application.project && application.project.status !== ProjectStatusEnum.TRANSFERRING)
+		return 'closed'
 	return viewer === 'owner' ? 'waiting-applicant' : 'action-needed'
 }
 
@@ -98,7 +102,7 @@ export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => 
 					title: 'The GitHub transfer request failed',
 					steps: [
 						'Nothing changed on the repository.',
-						'The project is open for applications again.',
+						'The project was returned to draft. Republish it to open it for applications again.',
 						'If this keeps happening, check the GitHub App permissions.',
 					],
 				}
@@ -109,6 +113,15 @@ export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => 
 					steps: [
 						ctx.reason ? `The applicant sees your reason: ${ctx.reason}` : 'The applicant sees your reason.',
 						'The project stays open for other applicants.',
+					],
+				}
+			case 'closed':
+				return {
+					variant: 'neutral',
+					title: 'This transfer is closed',
+					steps: [
+						'The repository was not transferred to the applicant.',
+						'The project is open again, or in draft if the transfer failed.',
 					],
 				}
 			default:
@@ -160,7 +173,16 @@ export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => 
 				title: 'The transfer could not start',
 				steps: [
 					'GitHub did not send the transfer request, so nothing changed.',
-					'You can apply to this project again.',
+					'The project is a draft again. The owner has to republish it before you can apply.',
+				],
+			}
+		case 'closed':
+			return {
+				variant: 'neutral',
+				title: 'This transfer is closed',
+				steps: [
+					`The repository was not transferred to you.`,
+					'The project is no longer waiting on your answer.',
 				],
 			}
 		case 'rejected':

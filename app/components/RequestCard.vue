@@ -31,7 +31,6 @@ const props = defineProps<{
 defineEmits<{
     (e: 'accept', id: string): void
     (e: 'reject', id: string): void
-    (e: 'write', applicantId: string): void
 }>()
 
 const getStatusBadgeClass = (status: string) => {
@@ -109,9 +108,6 @@ const getStatusBadgeClass = (status: string) => {
                 <Button size="sm" variant="destructive" @click="$emit('reject', request.id)">
                     Reject
                 </Button>
-                <!--<Button size="sm" variant="outline" @click="$emit('write', request.applicant.id)">
-                    Write
-                </Button>-->
             </div>
         </CardContent>
     </Card>

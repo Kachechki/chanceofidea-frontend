@@ -9,7 +9,7 @@ export default defineNuxtConfig({
 		plugins: [tailwindcss()],
 	},
 	shadcn: {
-		componentDir: 'src/widgets/ui',
+		componentDir: 'app/widgets/ui',
 	},
 	runtimeConfig: {
 		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000', 

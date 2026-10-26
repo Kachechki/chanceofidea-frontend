@@ -65,12 +65,13 @@ onMounted(async () => {
 		.map((t) => t.id)
 
 	// a fresh visit always starts on the first page
-	await projectsStore.fetchProjects(1)
+	const requestedPage = Math.max(1, Number.parseInt(String(route.query.page ?? '1'), 10) || 1)
+	await projectsStore.fetchProjects(requestedPage)
 })
 
 let searchTimeout: ReturnType<typeof setTimeout>
 watch(
-	[searchQuery, selectedCategorySlug, selectedTagSlugs, selectedSort],
+	[searchQuery, selectedCategorySlug, selectedTagSlugs, selectedSort, page],
 	() => {
 		clearTimeout(searchTimeout)
 		searchTimeout = setTimeout(() => {
@@ -84,6 +85,7 @@ watch(
 							: undefined,
 					sort:
 						selectedSort.value !== 'newest' ? selectedSort.value : undefined,
+					page: page.value > 1 ? page.value : undefined,
 				},
 			})
 		}, 300)

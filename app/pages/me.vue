@@ -39,8 +39,13 @@ watch(
   { immediate: true }
 )
 
-const createdProjects = computed<ProjectEntity[]>(() => myProjects.value)
-const adoptedProjects = computed<ProjectEntity[]>(() => [])
+// adopted projects leave the created list and show in the adopted tab
+const createdProjects = computed<ProjectEntity[]>(() =>
+  myProjects.value.filter((p) => p.status !== ProjectStatusEnum.ADOPTED)
+)
+const adoptedProjects = computed<ProjectEntity[]>(() =>
+  myProjects.value.filter((p) => p.status === ProjectStatusEnum.ADOPTED)
+)
 const favoriteProjects = computed<ProjectEntity[]>(() => [])
 
 const publishedCount = computed(
@@ -161,9 +166,6 @@ const confirmReject = async (reason: string) => {
   }
 }
 
-const handleWrite = (applicantId: string) => {
-  console.log('Write to applicant:', applicantId)
-}
 </script>
 
 <template>
@@ -342,19 +344,34 @@ const handleWrite = (applicantId: string) => {
           </div>
         </div>
 
-        <div v-if="activeTab === 'adopted'" class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50">
-          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <HeartHandshake class="w-6 h-6" />
+        <div v-if="activeTab === 'adopted'" class="flex flex-col gap-4">
+          <ul
+            v-if="adoptedProjects.length > 0"
+            aria-label="Adopted projects"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <li v-for="project in adoptedProjects" :key="project.id">
+              <ProjectCard :project="project" />
+            </li>
+          </ul>
+
+          <div
+            v-else
+            class="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
+          >
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <HeartHandshake class="w-6 h-6" />
+            </div>
+            <div class="text-center">
+              <h3 class="font-semibold text-lg text-foreground">No adopted projects</h3>
+              <p class="text-sm text-muted-foreground max-w-sm mt-1">
+                You haven't adopted any projects yet. Browse the catalog to find exciting codebases to continue.
+              </p>
+            </div>
+            <NuxtLink to="/projects">
+              <Button class="mt-2" variant="outline">Find a project</Button>
+            </NuxtLink>
           </div>
-          <div class="text-center">
-            <h3 class="font-semibold text-lg text-foreground">No adopted projects</h3>
-            <p class="text-sm text-muted-foreground max-w-sm mt-1">
-              You haven't adopted any projects yet. Browse the catalog to find exciting codebases to continue.
-            </p>
-          </div>
-          <NuxtLink to="/projects">
-            <Button class="mt-2" variant="outline">Find a project</Button>
-          </NuxtLink>
         </div>
 
         <div v-if="activeTab === 'requests'" class="flex flex-col gap-8">
@@ -376,7 +393,6 @@ const handleWrite = (applicantId: string) => {
                 :is-author-view="true"
                 @accept="openAccept"
                 @reject="openReject"
-                @write="handleWrite"
               />
             </div>
 
