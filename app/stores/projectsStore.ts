@@ -93,7 +93,7 @@ export const useProjectsStore = defineStore('projects', {
 			)
 		},
 
-		buildFilterQuery() {
+		buildFilterQuery(page = 1) {
 			const category = this.categories.find(
 				(c) => c.id === this.selectedCategoryId && c.id !== ALL_CATEGORY_ID
 			)
@@ -102,6 +102,8 @@ export const useProjectsStore = defineStore('projects', {
 				.map((t) => t.slug)
 
 			return {
+				page,
+				...(this.searchQuery ? { searchQuery: this.searchQuery } : {}),
 				...(category ? { categorySlugs: category.slug } : {}),
 				...(tagSlugs.length > 0 ? { tagSlugs } : {}),
 			}
@@ -113,12 +115,9 @@ export const useProjectsStore = defineStore('projects', {
 			this.loading = true
 			this.error = null
 			try {
-				const result = await $fetch<ProjectEntity[]>(
-					`/api/project/projects/${page}`,
-					{
-						query: this.buildFilterQuery(),
-					}
-				)
+				const result = await $fetch<ProjectEntity[]>('/api/project/projects', {
+					query: this.buildFilterQuery(page),
+				})
 				if (requestId !== projectsRequestId) return
 				this.projects = result
 				this.page = page
