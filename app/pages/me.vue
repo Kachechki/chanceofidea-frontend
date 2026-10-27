@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
 	Package,
@@ -49,6 +49,12 @@ const tabFromQuery = (value: unknown): ProfileTab => {
 }
 
 const activeTab = ref<ProfileTab>(tabFromQuery(route.query.tab))
+
+// write the default into the URL when ?tab= is missing or unknown
+onMounted(() => {
+	if (route.query.tab !== activeTab.value)
+		router.replace({ query: { ...route.query, tab: activeTab.value } })
+})
 
 // keep the tab in the URL so reloads, back/forward, and links land on the same tab
 watch(activeTab, (tab) => {
