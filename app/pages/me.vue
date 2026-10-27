@@ -16,7 +16,7 @@ import { useProjectsStore } from '~/stores/projectsStore'
 import { useRequestsStore } from '~/stores/useRequestsStore'
 import { useBookmarksStore } from '~/stores/bookmarksStore'
 import type { ApplicationEntity } from '~/types/application'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AcceptTransferModal from '~/components/modals/AcceptTransferModal.vue'
 import TransferActionModal from '~/components/modals/TransferActionModal.vue'
 import RejectApplicationModal from '~/components/modals/RejectApplicationModal.vue'
@@ -38,9 +38,30 @@ const { incomingRequests, outgoingRequests, applicantTransfers } =
 	storeToRefs(requestsStore)
 
 type ProfileTab = 'created' | 'bookmarks' | 'requests' | 'transfers' | 'adopted'
+const profileTabs: ProfileTab[] = ['created', 'bookmarks', 'requests', 'transfers', 'adopted']
 const route = useRoute()
-const activeTab = ref<ProfileTab>(
-	route.query.tab === 'transfers' ? 'transfers' : 'created',
+const router = useRouter()
+
+// unknown or missing ?tab= falls back to created projects
+const tabFromQuery = (value: unknown): ProfileTab => {
+	const tab = Array.isArray(value) ? value[0] : value
+	return profileTabs.find((t) => t === tab) ?? 'created'
+}
+
+const activeTab = ref<ProfileTab>(tabFromQuery(route.query.tab))
+
+// keep the tab in the URL so reloads, back/forward, and links land on the same tab
+watch(activeTab, (tab) => {
+	if (route.query.tab === tab) return
+	router.replace({ query: { ...route.query, tab } })
+})
+
+// follow the URL when it changes, for example from a link or the back button
+watch(
+	() => route.query.tab,
+	(tab) => {
+		activeTab.value = tabFromQuery(tab)
+	},
 )
 
 watch(
