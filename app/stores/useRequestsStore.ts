@@ -24,7 +24,7 @@ const STATUS_LABEL: Record<
 // project relation, so the card falls back to the project id until the backend adds it.
 const toRequestView = (
 	application: ApplicationEntity,
-	mode: 'incoming' | 'outgoing'
+	mode: 'incoming' | 'outgoing',
 ): AdoptionRequestEntity => {
 	const viewer = mode === 'incoming' ? 'owner' : 'applicant'
 	const applicantLogin = application.applicant?.login ?? ''
@@ -86,7 +86,7 @@ export const useRequestsStore = defineStore('requests', {
 		// accepted applications I sent, which are the transfers waiting on me
 		applicantTransfers(state): ApplicationEntity[] {
 			return state.outgoing.filter(
-				(a) => a.status === ApplicationStatusEnum.ACCEPTED
+				(a) => a.status === ApplicationStatusEnum.ACCEPTED,
 			)
 		},
 
@@ -94,7 +94,7 @@ export const useRequestsStore = defineStore('requests', {
 		// needs the project relation on outgoing items. without it this never matches.
 		activeForProject: (state) => (projectId: string) =>
 			state.outgoing.find(
-				(a) => a.project?.id === projectId && isActiveApplication(a)
+				(a) => a.project?.id === projectId && isActiveApplication(a),
 			),
 	},
 
@@ -104,7 +104,7 @@ export const useRequestsStore = defineStore('requests', {
 			this.error = null
 			try {
 				this.incoming = await $fetch<ApplicationEntity[]>(
-					'/api/application/incoming'
+					'/api/application/incoming',
 				)
 			} catch (err) {
 				this.incoming = []
@@ -119,7 +119,7 @@ export const useRequestsStore = defineStore('requests', {
 			this.error = null
 			try {
 				this.outgoing = await $fetch<ApplicationEntity[]>(
-					'/api/application/outcoming'
+					'/api/application/outcoming',
 				)
 			} catch (err) {
 				this.outgoing = []
@@ -198,8 +198,9 @@ export const useRequestsStore = defineStore('requests', {
 				await $fetch('/api/application/accept', {
 					method: 'POST',
 					query: {
-						applicationId: id,
-						id: application?.project?.id,
+						id,
+						//applicationId: id,
+						//id: application?.project?.id,
 					},
 				})
 			} catch (err) {
@@ -223,8 +224,9 @@ export const useRequestsStore = defineStore('requests', {
 				await $fetch('/api/application/reject', {
 					method: 'POST',
 					query: {
-						applicationId: id,
-						id: application?.project?.id,
+						id,
+						//applicationId: id,
+						//id: application?.project?.id,
 					},
 					body: { rejectReason: reason },
 				})
