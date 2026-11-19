@@ -14,7 +14,7 @@ watch(
 	() => route.fullPath,
 	() => {
 		menuOpen.value = false
-	}
+	},
 )
 </script>
 
@@ -49,13 +49,46 @@ watch(
 			</nav>
 
 			<div class="hidden md:flex items-center gap-3 shrink-0">
+				<div
+					class="flex items-center gap-1"
+					role="group"
+					:aria-label="$t('layout.header.language')"
+				>
+					<button
+						type="button"
+						class="px-2 py-1 text-xs font-medium rounded-md"
+						:class="
+							locale === 'en'
+								? 'bg-accent text-foreground'
+								: 'text-muted-foreground'
+						"
+						:aria-pressed="locale === 'en'"
+						@click="setLocale('en')"
+					>
+						EN
+					</button>
+					<button
+						type="button"
+						class="px-2 py-1 text-xs font-medium rounded-md"
+						:class="
+							locale === 'uk'
+								? 'bg-accent text-foreground'
+								: 'text-muted-foreground'
+						"
+						:aria-pressed="locale === 'uk'"
+						@click="setLocale('uk')"
+					>
+						UK
+					</button>
+				</div>
 				<Button
 					as-child
 					class="bg-primary text-primary-foreground hover:bg-primary/90"
 				>
-					<NuxtLink to="/projects/create">{{ $t('layout.header.publish') }}</NuxtLink>
+					<NuxtLink to="/projects/create">{{
+						$t('layout.header.publish')
+					}}</NuxtLink>
 				</Button>
-
 				<template v-if="user">
 					<NuxtLink
 						to="/me"
@@ -84,26 +117,6 @@ watch(
 				>
 					<NuxtLink to="/login">{{ $t('layout.header.login') }}</NuxtLink>
 				</Button>
-				<div class="flex items-center gap-1" role="group" :aria-label="$t('layout.header.language')">
-					<button
-						type="button"
-						class="px-2 py-1 text-xs font-medium rounded-md"
-						:class="locale === 'en' ? 'bg-accent text-foreground' : 'text-muted-foreground'"
-						:aria-pressed="locale === 'en'"
-						@click="setLocale('en')"
-					>
-						EN
-					</button>
-					<button
-						type="button"
-						class="px-2 py-1 text-xs font-medium rounded-md"
-						:class="locale === 'uk' ? 'bg-accent text-foreground' : 'text-muted-foreground'"
-						:aria-pressed="locale === 'uk'"
-						@click="setLocale('uk')"
-					>
-						UK
-					</button>
-				</div>
 			</div>
 
 			<button
@@ -111,7 +124,11 @@ watch(
 				class="md:hidden p-2 rounded-md text-foreground hover:bg-accent"
 				aria-controls="mobile-menu"
 				:aria-expanded="menuOpen"
-				:aria-label="menuOpen ? $t('layout.header.closeMenu') : $t('layout.header.openMenu')"
+				:aria-label="
+					menuOpen
+						? $t('layout.header.closeMenu')
+						: $t('layout.header.openMenu')
+				"
 				@click="menuOpen = !menuOpen"
 			>
 				<X
@@ -144,7 +161,9 @@ watch(
 				as-child
 				class="bg-primary text-primary-foreground hover:bg-primary/90 justify-start"
 			>
-				<NuxtLink to="/projects/create">{{ $t('layout.header.publish') }}</NuxtLink>
+				<NuxtLink to="/projects/create">{{
+					$t('layout.header.publish')
+				}}</NuxtLink>
 			</Button>
 			<template v-if="user">
 				<Button
@@ -152,7 +171,9 @@ watch(
 					as-child
 					class="justify-start"
 				>
-					<NuxtLink to="/me">{{ $t('layout.header.profile', { login: user.login }) }}</NuxtLink>
+					<NuxtLink to="/me">{{
+						$t('layout.header.profile', { login: user.login })
+					}}</NuxtLink>
 				</Button>
 				<Button
 					variant="outline"
@@ -170,9 +191,27 @@ watch(
 			>
 				<NuxtLink to="/login">{{ $t('layout.header.login') }}</NuxtLink>
 			</Button>
-			<div class="flex items-center gap-1 pt-2" role="group" :aria-label="$t('layout.header.language')">
-				<button type="button" class="px-2 py-1 text-xs font-medium rounded-md" :aria-pressed="locale === 'en'" @click="setLocale('en')">EN</button>
-				<button type="button" class="px-2 py-1 text-xs font-medium rounded-md" :aria-pressed="locale === 'uk'" @click="setLocale('uk')">UK</button>
+			<div
+				class="flex items-center gap-1 pt-2"
+				role="group"
+				:aria-label="$t('layout.header.language')"
+			>
+				<button
+					type="button"
+					class="px-2 py-1 text-xs font-medium rounded-md"
+					:aria-pressed="locale === 'en'"
+					@click="setLocale('en')"
+				>
+					EN
+				</button>
+				<button
+					type="button"
+					class="px-2 py-1 text-xs font-medium rounded-md"
+					:aria-pressed="locale === 'uk'"
+					@click="setLocale('uk')"
+				>
+					UK
+				</button>
 			</div>
 		</nav>
 	</header>
