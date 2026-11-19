@@ -14,11 +14,11 @@
       @keydown.esc="emit('close')"
     >
       <div class="flex items-center justify-between pb-4 border-b border-border">
-        <h2 id="reject-title" class="text-xl font-bold">Reject application</h2>
+        <h2 id="reject-title" class="text-xl font-bold">{{ $t('modals.reject.title') }}</h2>
         <button
           type="button"
           class="text-muted-foreground hover:text-foreground"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
           @click="emit('close')"
         >
           <span aria-hidden="true">✕</span>
@@ -26,21 +26,19 @@
       </div>
 
       <p id="reject-description" class="mt-4 text-sm text-muted-foreground">
-        Tell @{{ applicantLogin }} why you are declining their request for
-        <span class="font-medium text-foreground">{{ projectTitle }}</span>.
-        The reason is shown to them. The project stays open for other applicants.
+        {{ $t('modals.reject.body', { login: applicantLogin, project: projectTitle }) }}
       </p>
 
       <form novalidate class="mt-4 flex flex-col gap-4" @submit.prevent="handleSubmit">
         <div class="flex flex-col gap-1.5">
-          <label for="reject-reason" class="text-sm font-medium">Reason</label>
+          <label for="reject-reason" class="text-sm font-medium">{{ $t('modals.reject.reason') }}</label>
           <textarea
             id="reject-reason"
             ref="input"
             v-model="reason"
             rows="4"
             :maxlength="LIMITS.rejectReason"
-            placeholder="For example: I need someone with more experience in this stack."
+            :placeholder="$t('modals.reject.placeholder')"
             :aria-invalid="!!reasonError"
             :aria-describedby="reasonError ? 'reject-reason-error' : undefined"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -56,7 +54,7 @@
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
             @click="emit('close')"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             type="submit"
@@ -64,7 +62,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {{ isLoading ? 'Rejecting...' : 'Reject application' }}
+            {{ isLoading ? $t('modals.reject.rejecting') : $t('modals.reject.confirm') }}
           </button>
         </div>
       </form>
@@ -96,9 +94,11 @@ const reason = ref('')
 const attempted = ref(false)
 
 // the same rule as the store: required, within the shared length limit
+const { t } = useI18n()
+
 const reasonError = computed(() =>
   attempted.value
-    ? validateText(reason.value, 'Reason', LIMITS.rejectReason, 'Add a short reason so the applicant knows why')
+    ? validateText(reason.value, t('modals.reject.reason'), LIMITS.rejectReason, t('modals.reject.reasonRequired'))
     : ''
 )
 

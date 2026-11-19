@@ -29,8 +29,8 @@
 							getStatusColor(project.status),
 						]"
 						role="img"
-						:aria-label="`Status: ${project.status}`"
-						:title="`Status: ${project.status}`"
+						:aria-label="$t('status.label', { status: $t(`status.project.${project.status}`) })"
+						:title="$t('status.label', { status: $t(`status.project.${project.status}`) })"
 					/>
 				</div>
 
@@ -39,7 +39,7 @@
 				</p>
 
 				<div class="flex items-center justify-between gap-4 pt-2">
-					<ul class="flex flex-wrap items-center gap-1.5" aria-label="Tags">
+					<ul class="flex flex-wrap items-center gap-1.5" :aria-label="$t('project.tags')">
 						<li
 							v-for="tag in project.tags"
 							:key="tag.id"
@@ -55,7 +55,7 @@
 							type="button"
 							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer"
 							:aria-pressed="bookmarked"
-							:aria-label="bookmarked ? `Remove ${project.title} from bookmarks` : `Add ${project.title} to bookmarks`"
+							:aria-label="bookmarked ? $t('project.removeBookmark', { title: project.title }) : $t('project.addBookmark', { title: project.title })"
 							@click="onBookmark"
 						>
 							<Bookmark
@@ -70,7 +70,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 							class="p-1.5 hover:text-foreground transition-colors rounded-md hover:bg-accent cursor-pointer inline-flex items-center justify-center"
-							:aria-label="`Open ${project.title} repository on GitHub (opens in a new tab)`"
+							:aria-label="$t('project.openRepoNamed', { title: project.title })"
 						>
 							<ExternalLink class="w-4 h-4" aria-hidden="true" />
 						</a>

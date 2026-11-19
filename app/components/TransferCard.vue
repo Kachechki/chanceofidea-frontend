@@ -16,7 +16,8 @@ const emit = defineEmits<{
     decline: []
 }>()
 
-const ownerLogin = computed(() => props.application.project?.owner?.login ?? 'unknown')
+const { t } = useI18n()
+const ownerLogin = computed(() => props.application.project?.owner?.login ?? t('common.unknown'))
 const repoName = computed(() =>
     props.application.project ? getProjectFullName(props.application.project) : ''
 )
@@ -40,10 +41,10 @@ const needsAction = computed(() => stage.value === 'action-needed')
         <CardContent class="p-5 flex flex-col gap-4">
             <div class="flex flex-col gap-1 min-w-0">
                 <h3 class="font-bold text-lg text-foreground truncate">
-                    {{ application.project?.title ?? 'Unknown project' }}
+                    {{ application.project?.title ?? $t('common.unknownProject') }}
                 </h3>
                 <p class="text-xs font-mono text-muted-foreground break-all">{{ repoName }}</p>
-                <p class="text-xs text-muted-foreground">From @{{ ownerLogin }}</p>
+                <p class="text-xs text-muted-foreground">{{ $t('project.fromOwner', { login: ownerLogin }) }}</p>
             </div>
 
             <StatusBanner
@@ -61,10 +62,10 @@ const needsAction = computed(() => stage.value === 'action-needed')
                     class="text-destructive hover:text-destructive hover:bg-destructive/10"
                     @click="emit('decline')"
                 >
-                    I do not want it
+                    {{ $t('transfer.decline') }}
                 </Button>
                 <Button @click="emit('confirm')">
-                    I have received it
+                    {{ $t('transfer.received') }}
                 </Button>
             </div>
         </CardContent>

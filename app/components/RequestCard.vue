@@ -57,7 +57,7 @@ const getStatusBadgeClass = (status: string) => {
                     <div class="flex flex-col">
                         <span class="font-semibold text-sm text-foreground">{{ request.applicant.name }}</span>
                         <span v-if="request.repoName" class="text-xs text-primary font-mono break-all">{{ request.repoName }}</span>
-                        <span class="text-xs text-muted-foreground font-mono">Submitted: {{ request.createdAt }}</span>
+                        <span class="text-xs text-muted-foreground font-mono">{{ $t('requests.submitted', { date: request.createdAt }) }}</span>
                     </div>
                 </div>
 
@@ -65,7 +65,7 @@ const getStatusBadgeClass = (status: string) => {
                     class="px-2.5 py-1 text-xs font-mono font-medium rounded-md border"
                     :class="getStatusBadgeClass(request.status)"
                 >
-                    {{ request.status }}
+                    {{ $t(`status.application.${request.status}`) }}
                 </span>
             </div>
 
@@ -78,12 +78,12 @@ const getStatusBadgeClass = (status: string) => {
 
             <div class="flex flex-col gap-3 text-sm">
                 <div>
-                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you?</span>
+                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{{ $t('requests.whyYou') }}</span>
                     <p class="mt-1 text-foreground leading-relaxed">{{ request.whyMe }}</p>
                 </div>
 
                 <div>
-                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action plan (2-4 weeks)</span>
+                    <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{{ $t('requests.actionPlan') }}</span>
                     <p class="mt-1 text-foreground leading-relaxed">{{ request.actionPlan }}</p>
                 </div>
 
@@ -94,18 +94,18 @@ const getStatusBadgeClass = (status: string) => {
                         rel="noopener noreferrer"
                         class="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
                     >
-                        <span aria-hidden="true">🔗</span> GitHub / Portfolio link
-                        <span class="sr-only">(opens in a new tab)</span>
+                        <span aria-hidden="true">🔗</span> {{ $t('requests.portfolio') }}
+                        <span class="sr-only">{{ $t('common.newTab') }}</span>
                     </a>
                 </div>
             </div>
 
             <div v-if="isAuthorView && request.status === 'Pending'" class="flex items-center gap-2 pt-3 border-t border-border">
                 <Button size="sm" class="bg-emerald-600 hover:bg-emerald-700 text-white" @click="$emit('accept', request.id)">
-                    Accept
+                    {{ $t('requests.accept') }}
                 </Button>
                 <Button size="sm" variant="destructive" @click="$emit('reject', request.id)">
-                    Reject
+                    {{ $t('requests.reject') }}
                 </Button>
             </div>
         </CardContent>

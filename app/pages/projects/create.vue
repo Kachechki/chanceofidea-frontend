@@ -26,8 +26,9 @@ import {
 } from '~/lib/validation'
 
 const { user, ready } = useAuth()
+const { t } = useI18n()
 
-useHead({ title: 'Publish a Project' })
+useHead({ title: computed(() => t('projectForm.createTitle')) })
 
 const projectsStore = useProjectsStore()
 const { selectableCategories, tags, loading } = storeToRefs(projectsStore)
@@ -70,7 +71,7 @@ let allowLeave = false
 
 onBeforeRouteLeave(() => {
     if (allowLeave || !isDirty.value) return true
-    return window.confirm('You have unsaved changes. Leave this page anyway?')
+    return window.confirm(t('common.unsavedLeave'))
 })
 
 const warnOnUnload = (event: BeforeUnloadEvent) => {
@@ -119,7 +120,7 @@ const submit = async (publish: boolean) => {
         allowLeave = true
         await navigateTo('/me')
     } catch (err) {
-        serverError.value = errorMessage(err, 'Failed to save project')
+        serverError.value = errorMessage(err, t('errors.saveProject'))
     }
 }
 
@@ -136,13 +137,13 @@ const fieldClass =
             class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
         >
             <h2 class="font-semibold text-lg text-foreground">
-                Log in to publish a project
+                {{ $t('projectForm.loginToPublish') }}
             </h2>
             <Button
                 class="mt-2"
                 as-child
             >
-                <NuxtLink to="/login">Log in</NuxtLink>
+                <NuxtLink to="/login">{{ $t('common.login') }}</NuxtLink>
             </Button>
         </div>
 
@@ -151,9 +152,9 @@ const fieldClass =
             class="rounded-2xl"
         >
             <CardHeader>
-                <CardTitle class="text-2xl">Publish a project</CardTitle>
+                <CardTitle class="text-2xl">{{ $t('projectForm.createHeading') }}</CardTitle>
                 <CardDescription>
-                    Share an unfinished side project so someone else can continue it.
+                    {{ $t('projectForm.createDescription') }}
                 </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
@@ -166,12 +167,12 @@ const fieldClass =
                         <label
                             for="title"
                             class="text-sm font-medium text-foreground"
-                        >Title</label>
+                        >{{ $t('projectForm.title') }}</label>
                         <Input
                             id="title"
                             v-model="form.title"
                             :maxlength="LIMITS.title"
-                            placeholder="e.g. Walkman firmware"
+                            :placeholder="$t('projectForm.titlePlaceholder')"
                             :aria-invalid="!!errors.title"
                             :aria-describedby="errors.title ? 'title-error' : undefined"
                         />
@@ -185,7 +186,7 @@ const fieldClass =
                         <label
                             for="repository"
                             class="text-sm font-medium text-foreground"
-                        >Repository</label>
+                        >{{ $t('projectForm.repository') }}</label>
                         <GitHubRepoPicker
                             id="repository"
                             v-model="form.repositoryName"
@@ -197,13 +198,13 @@ const fieldClass =
                         <label
                             for="description"
                             class="text-sm font-medium text-foreground"
-                        >Description</label>
+                        >{{ $t('projectForm.description') }}</label>
                         <textarea
                             id="description"
                             v-model="form.description"
                             rows="4"
                             :maxlength="LIMITS.description"
-                            placeholder="What the project does and where you stopped"
+                            :placeholder="$t('projectForm.descriptionPlaceholder')"
                             :class="fieldClass"
                             :aria-invalid="!!errors.description"
                             :aria-describedby="errors.description ? 'description-error' : undefined"
@@ -218,7 +219,7 @@ const fieldClass =
                         <label
                             for="category"
                             class="text-sm font-medium text-foreground"
-                        >Category</label>
+                        >{{ $t('projectForm.category') }}</label>
                         <select
                             id="category"
                             v-model="form.categoryId"
@@ -230,7 +231,7 @@ const fieldClass =
                                 value=""
                                 disabled
                             >
-                                Select a category
+                                {{ $t('projectForm.selectCategory') }}
                             </option>
                             <option
                                 v-for="cat in selectableCategories"
@@ -250,7 +251,7 @@ const fieldClass =
                         <span
                             id="create-tags-label"
                             class="text-sm font-medium text-foreground"
-                        >Tags</span>
+                        >{{ $t('projectForm.tags') }}</span>
                         <div
                             class="flex flex-wrap gap-2"
                             role="group"
@@ -276,7 +277,7 @@ const fieldClass =
                                 v-if="tags.length === 0"
                                 class="text-xs text-muted-foreground"
                             >
-                                No tags available
+                                {{ $t('projectForm.noTags') }}
                             </p>
                         </div>
                         <FieldError
@@ -290,7 +291,7 @@ const fieldClass =
                             for="readiness"
                             class="text-sm font-medium text-foreground"
                         >
-                            Readiness: {{ form.readinessPercent }}%
+                            {{ $t('projectForm.readiness', { percent: form.readinessPercent }) }}
                         </label>
                         <input
                             id="readiness"
@@ -318,14 +319,14 @@ const fieldClass =
                             :disabled="loading"
                             @click="submit(false)"
                         >
-                            Save as draft
+                            {{ $t('projectForm.saveDraft') }}
                         </Button>
                         <Button
                             type="button"
                             :disabled="loading"
                             @click="submit(true)"
                         >
-                            {{ loading ? 'Publishing...' : 'Publish' }}
+                            {{ loading ? $t('projectForm.publishing') : $t('projectForm.publish') }}
                         </Button>
                     </div>
                 </form>

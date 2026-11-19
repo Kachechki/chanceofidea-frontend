@@ -37,7 +37,7 @@ const fieldClass =
 
 <template>
 	<div class="space-y-3">
-		<div class="flex items-center gap-4 text-sm" role="group" aria-label="Repository input mode">
+		<div class="flex items-center gap-4 text-sm" role="group" :aria-label="$t('repoPicker.mode')">
 			<button
 				type="button"
 				:aria-pressed="mode === 'select'"
@@ -47,7 +47,7 @@ const fieldClass =
 				]"
 				@click="mode = 'select'"
 			>
-				Select repository
+				{{ $t('repoPicker.select') }}
 			</button>
 			<button
 				type="button"
@@ -58,7 +58,7 @@ const fieldClass =
 				]"
 				@click="mode = 'manual'"
 			>
-				Enter manually
+				{{ $t('repoPicker.manual') }}
 			</button>
 		</div>
 
@@ -79,20 +79,20 @@ const fieldClass =
 					class="w-fit text-primary underline underline-offset-4 cursor-pointer"
 					@click="mode = 'manual'"
 				>
-					Enter the repository manually instead
+					{{ $t('repoPicker.manualInstead') }}
 				</button>
 			</div>
 			<p
 				v-else-if="githubRepos.length === 0"
 				class="text-sm text-muted-foreground"
 			>
-				No public repositories found on your account.
+				{{ $t('repoPicker.none') }}
 				<button
 					type="button"
 					class="text-primary underline underline-offset-4 cursor-pointer"
 					@click="mode = 'manual'"
 				>
-					Enter one manually
+					{{ $t('repoPicker.enterOne') }}
 				</button>
 			</p>
 			<select
@@ -103,7 +103,7 @@ const fieldClass =
 				:aria-invalid="!!error"
 				:aria-describedby="error ? `${id}-error` : undefined"
 			>
-				<option value="" disabled>Select one of your public repositories</option>
+				<option value="" disabled>{{ $t('repoPicker.placeholderSelect') }}</option>
 				<option
 					v-for="repo in githubRepos"
 					:key="repo.id"
@@ -121,7 +121,7 @@ const fieldClass =
 				type="text"
 				autocomplete="off"
 				spellcheck="false"
-				placeholder="owner/repository or https://github.com/owner/repository"
+				:placeholder="$t('repoPicker.placeholderManual')"
 				:class="fieldClass"
 				:aria-invalid="!!error"
 				:aria-describedby="error ? `${id}-error` : undefined"

@@ -15,12 +15,12 @@
     >
       <div class="flex items-start justify-between gap-4 pb-4 border-b border-destructive/30">
         <h2 id="accept-transfer-title" class="text-xl font-bold text-destructive">
-          Accept and transfer repository
+          {{ $t('modals.accept.title') }}
         </h2>
         <button
           type="button"
           class="text-muted-foreground hover:text-foreground"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
           @click="emit('close')"
         >
           <span aria-hidden="true">✕</span>
@@ -28,30 +28,19 @@
       </div>
 
       <div id="accept-transfer-warning" class="mt-4 flex flex-col gap-3 text-sm">
-        <p class="font-semibold text-destructive">This action cannot be undone.</p>
+        <p class="font-semibold text-destructive">{{ $t('modals.accept.cannotUndo') }}</p>
         <ul class="list-disc pl-5 flex flex-col gap-2 text-foreground">
-          <li>
-            <strong>{{ repoName }}</strong> will be transferred to
-            <strong>@{{ applicantLogin }}</strong> on GitHub.
-          </li>
-          <li>
-            GitHub sends them a transfer request. Until they accept it on GitHub, the transfer stays pending.
-          </li>
-          <li>
-            Once they accept, you lose ownership of the repository and its settings, and you can no longer
-            push, merge, or delete it from your account.
-          </li>
-          <li>
-            A <code class="font-mono">TRANSFER.md</code> record is committed to the repository after the
-            transfer completes.
-          </li>
+          <li>{{ $t('modals.accept.line1', { repo: repoName, login: applicantLogin }) }}</li>
+          <li>{{ $t('modals.accept.line2') }}</li>
+          <li>{{ $t('modals.accept.line3') }}</li>
+          <li>{{ $t('modals.accept.line4') }}</li>
         </ul>
       </div>
 
       <form novalidate class="mt-5 flex flex-col gap-4" @submit.prevent="handleConfirm">
         <div class="flex flex-col gap-1.5">
           <label for="accept-transfer-input" class="text-sm font-medium">
-            To confirm, type the repository name <span class="font-mono">{{ repoName }}</span> below
+            {{ $t('modals.accept.confirmLabel', { repo: repoName }) }}
           </label>
           <input
             id="accept-transfer-input"
@@ -73,7 +62,7 @@
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
             @click="emit('close')"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             type="submit"
@@ -81,7 +70,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isLoading ? 'Transferring...' : 'Accept and transfer' }}
+            {{ isLoading ? $t('modals.accept.transferring') : $t('modals.accept.confirm') }}
           </button>
         </div>
       </form>

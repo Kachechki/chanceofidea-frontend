@@ -13,10 +13,12 @@ export default defineNuxtConfig({
 	},
 	i18n: {
 		locales: [
-			{ code: 'en', language: 'en-US' },
-			{ code: 'uk', language: 'uk-UA' },
+			{ code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+			{ code: 'uk', language: 'uk-UA', name: 'Українська', file: 'uk.json' },
 		],
 		defaultLocale: 'en',
+		langDir: 'locales',
+		strategy: 'no_prefix',
 	},
 	runtimeConfig: {
 		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000',

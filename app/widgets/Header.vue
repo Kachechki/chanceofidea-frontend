@@ -5,6 +5,7 @@ import { Lightbulb, Menu, X } from '@lucide/vue'
 
 const { user, logout } = useAuth()
 const route = useRoute()
+const { locale, setLocale } = useI18n()
 
 const menuOpen = ref(false)
 
@@ -21,7 +22,7 @@ watch(
 	<header class="bg-background border-b border-border">
 		<div class="flex items-center justify-between gap-4 px-4 md:px-8 py-4">
 			<nav
-				aria-label="Main"
+				:aria-label="$t('layout.header.navMain')"
 				class="flex items-center gap-3 min-w-0"
 			>
 				<NuxtLink
@@ -34,7 +35,7 @@ watch(
 						aria-hidden="true"
 					/>
 					<span class="text-lg font-bold text-foreground whitespace-nowrap">
-						Chance of Idea
+						{{ $t('layout.header.brand') }}
 					</span>
 				</NuxtLink>
 
@@ -43,7 +44,7 @@ watch(
 					as-child
 					class="hidden md:inline-flex"
 				>
-					<NuxtLink to="/projects">Project Catalog</NuxtLink>
+					<NuxtLink to="/projects">{{ $t('layout.header.catalog') }}</NuxtLink>
 				</Button>
 			</nav>
 
@@ -52,14 +53,14 @@ watch(
 					as-child
 					class="bg-primary text-primary-foreground hover:bg-primary/90"
 				>
-					<NuxtLink to="/projects/create">Publish Project</NuxtLink>
+					<NuxtLink to="/projects/create">{{ $t('layout.header.publish') }}</NuxtLink>
 				</Button>
 
 				<template v-if="user">
 					<NuxtLink
 						to="/me"
 						class="rounded-full"
-						:aria-label="`Your profile (@${user.login})`"
+						:aria-label="$t('layout.header.profile', { login: user.login })"
 					>
 						<img
 							:src="user.avatarUrl"
@@ -72,7 +73,7 @@ watch(
 						class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
 						@click="logout"
 					>
-						Log out
+						{{ $t('layout.header.logout') }}
 					</Button>
 				</template>
 				<Button
@@ -81,8 +82,28 @@ watch(
 					variant="outline"
 					class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
 				>
-					<NuxtLink to="/login">Log in</NuxtLink>
+					<NuxtLink to="/login">{{ $t('layout.header.login') }}</NuxtLink>
 				</Button>
+				<div class="flex items-center gap-1" role="group" :aria-label="$t('layout.header.language')">
+					<button
+						type="button"
+						class="px-2 py-1 text-xs font-medium rounded-md"
+						:class="locale === 'en' ? 'bg-accent text-foreground' : 'text-muted-foreground'"
+						:aria-pressed="locale === 'en'"
+						@click="setLocale('en')"
+					>
+						EN
+					</button>
+					<button
+						type="button"
+						class="px-2 py-1 text-xs font-medium rounded-md"
+						:class="locale === 'uk' ? 'bg-accent text-foreground' : 'text-muted-foreground'"
+						:aria-pressed="locale === 'uk'"
+						@click="setLocale('uk')"
+					>
+						UK
+					</button>
+				</div>
 			</div>
 
 			<button
@@ -90,7 +111,7 @@ watch(
 				class="md:hidden p-2 rounded-md text-foreground hover:bg-accent"
 				aria-controls="mobile-menu"
 				:aria-expanded="menuOpen"
-				:aria-label="menuOpen ? 'Close menu' : 'Open menu'"
+				:aria-label="menuOpen ? $t('layout.header.closeMenu') : $t('layout.header.openMenu')"
 				@click="menuOpen = !menuOpen"
 			>
 				<X
@@ -109,7 +130,7 @@ watch(
 		<nav
 			v-if="menuOpen"
 			id="mobile-menu"
-			aria-label="Mobile"
+			:aria-label="$t('layout.header.navMobile')"
 			class="md:hidden flex flex-col gap-2 border-t border-border px-4 py-4"
 		>
 			<Button
@@ -117,13 +138,13 @@ watch(
 				as-child
 				class="justify-start"
 			>
-				<NuxtLink to="/projects">Project Catalog</NuxtLink>
+				<NuxtLink to="/projects">{{ $t('layout.header.catalog') }}</NuxtLink>
 			</Button>
 			<Button
 				as-child
 				class="bg-primary text-primary-foreground hover:bg-primary/90 justify-start"
 			>
-				<NuxtLink to="/projects/create">Publish Project</NuxtLink>
+				<NuxtLink to="/projects/create">{{ $t('layout.header.publish') }}</NuxtLink>
 			</Button>
 			<template v-if="user">
 				<Button
@@ -131,14 +152,14 @@ watch(
 					as-child
 					class="justify-start"
 				>
-					<NuxtLink to="/me">Your profile (@{{ user.login }})</NuxtLink>
+					<NuxtLink to="/me">{{ $t('layout.header.profile', { login: user.login }) }}</NuxtLink>
 				</Button>
 				<Button
 					variant="outline"
 					class="justify-start"
 					@click="logout"
 				>
-					Log out
+					{{ $t('layout.header.logout') }}
 				</Button>
 			</template>
 			<Button
@@ -147,8 +168,12 @@ watch(
 				as-child
 				class="justify-start"
 			>
-				<NuxtLink to="/login">Log in</NuxtLink>
+				<NuxtLink to="/login">{{ $t('layout.header.login') }}</NuxtLink>
 			</Button>
+			<div class="flex items-center gap-1 pt-2" role="group" :aria-label="$t('layout.header.language')">
+				<button type="button" class="px-2 py-1 text-xs font-medium rounded-md" :aria-pressed="locale === 'en'" @click="setLocale('en')">EN</button>
+				<button type="button" class="px-2 py-1 text-xs font-medium rounded-md" :aria-pressed="locale === 'uk'" @click="setLocale('uk')">UK</button>
+			</div>
 		</nav>
 	</header>
 </template>

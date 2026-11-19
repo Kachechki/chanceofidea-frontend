@@ -24,6 +24,6 @@ withDefaults(
 			:class="['animate-spin text-muted-foreground', size]"
 			aria-hidden="true"
 		/>
-		<span class="sr-only">Loading</span>
+		<span class="sr-only">{{ $t('common.loading') }}</span>
 	</div>
 </template>

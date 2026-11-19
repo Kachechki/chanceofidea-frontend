@@ -23,8 +23,9 @@ import RejectApplicationModal from '~/components/modals/RejectApplicationModal.v
 
 const { user, ready } = useAuth()
 const githubAppSlug = useRuntimeConfig().public.githubAppSlug as string
+const { t, locale } = useI18n()
 
-useHead({ title: 'My Profile' })
+useHead({ title: computed(() => t('profile.title')) })
 
 const projectsStore = useProjectsStore()
 const {
@@ -95,31 +96,31 @@ const bookmarkedProjects = computed<ProjectEntity[]>(() => bookmarks.items)
 const tabs = computed(() => [
 	{
 		id: 'created' as const,
-		label: 'Created Projects',
+		label: t('profile.tabs.created'),
 		icon: Package,
 		count: createdProjects.value.length,
 	},
 	{
 		id: 'bookmarks' as const,
-		label: 'Bookmarks',
+		label: t('profile.tabs.bookmarks'),
 		icon: Bookmark,
 		count: bookmarkedProjects.value.length,
 	},
 	{
 		id: 'requests' as const,
-		label: 'Requests',
+		label: t('profile.tabs.requests'),
 		icon: FileText,
 		count: incomingRequests.value.length + outgoingRequests.value.length,
 	},
 	{
 		id: 'transfers' as const,
-		label: 'Transfers',
+		label: t('profile.tabs.transfers'),
 		icon: Clock,
 		count: applicantTransfers.value.length,
 	},
 	{
 		id: 'adopted' as const,
-		label: 'Adopted Projects',
+		label: t('profile.tabs.adopted'),
 		icon: HeartHandshake,
 		count: adoptedProjects.value.length,
 	},
@@ -134,7 +135,7 @@ const publishedCount = computed(
 
 const joinedDate = computed(() => {
 	if (!user.value?.createdAt) return ''
-	return new Date(user.value.createdAt).toLocaleDateString('en-US', {
+	return new Date(user.value.createdAt).toLocaleDateString(locale.value === 'uk' ? 'uk-UA' : 'en-US', {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
@@ -175,7 +176,7 @@ const confirmAccept = async () => {
 		// accepting changes the project status to TRANSFERRING
 		projectsStore.fetchMyProjects()
 	} catch (err) {
-		acceptError.value = requestsStore.error ?? 'Failed to accept application'
+		acceptError.value = requestsStore.error ?? t('errors.acceptApplication')
 	} finally {
 		acceptSubmitting.value = false
 	}
@@ -213,7 +214,7 @@ const confirmTransfer = async () => {
 		// a confirmed transfer changes the project to adopted, so refresh the project lists
 		projectsStore.fetchMyProjects()
 	} catch {
-		transferError.value = requestsStore.error ?? 'Could not complete the action'
+		transferError.value = requestsStore.error ?? t('errors.completeAction')
 	} finally {
 		transferSubmitting.value = false
 	}
@@ -244,7 +245,7 @@ const confirmReject = async (reason: string) => {
 		await requestsStore.rejectRequest(rejectTarget.value.id, reason)
 		rejectTarget.value = null
 	} catch {
-		rejectError.value = requestsStore.error ?? 'Failed to reject application'
+		rejectError.value = requestsStore.error ?? t('errors.rejectApplication')
 	} finally {
 		rejectSubmitting.value = false
 	}
@@ -260,16 +261,16 @@ const confirmReject = async (reason: string) => {
 			class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
 		>
 			<h2 class="font-semibold text-lg text-foreground">
-				You are not logged in
+				{{ $t('profile.loggedOutTitle') }}
 			</h2>
 			<p class="text-sm text-muted-foreground">
-				Log in with GitHub to see your profile.
+				{{ $t('profile.loggedOutBody') }}
 			</p>
 			<Button
 				as-child
 				class="mt-2"
 			>
-				<NuxtLink to="/login">Log in</NuxtLink>
+				<NuxtLink to="/login">{{ $t('common.login') }}</NuxtLink>
 			</Button>
 		</div>
 
@@ -304,14 +305,14 @@ const confirmReject = async (reason: string) => {
 								rel="noopener noreferrer"
 								class="hover:text-foreground flex items-center gap-1"
 							>
-								GitHub profile
-								<span class="sr-only">(opens in a new tab)</span>
+								{{ $t('profile.githubProfile') }}
+								<span class="sr-only">{{ $t('common.newTab') }}</span>
 							</a>
 							<span
 								v-if="joinedDate"
 								class="flex items-center gap-1"
 							>
-								<Globe class="w-4 h-4" /> Joined {{ joinedDate }}
+								<Globe class="w-4 h-4" /> {{ $t('profile.joined', { date: joinedDate }) }}
 							</span>
 						</div>
 					</div>
@@ -330,29 +331,29 @@ const confirmReject = async (reason: string) => {
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							Install GitHub app
-							<span class="sr-only">(opens GitHub in a new tab)</span>
+							{{ $t('profile.installApp') }}
+							<span class="sr-only">{{ $t('common.newTabGithub') }}</span>
 						</a>
 					</Button>
 					<div class="text-center px-3">
 						<div class="text-xl font-bold text-foreground">
 							{{ publishedCount }}
 						</div>
-						<div class="text-xs text-muted-foreground">Published</div>
+						<div class="text-xs text-muted-foreground">{{ $t('profile.published') }}</div>
 					</div>
 					<div class="w-px h-8 bg-border" />
 					<div class="text-center px-3">
 						<div class="text-xl font-bold text-foreground">
 							{{ createdProjects.length }}
 						</div>
-						<div class="text-xs text-muted-foreground">Created</div>
+						<div class="text-xs text-muted-foreground">{{ $t('profile.created') }}</div>
 					</div>
 				</div>
 			</div>
 
 			<div
 				role="tablist"
-				aria-label="Profile sections"
+				:aria-label="$t('profile.sections')"
 				class="flex items-center border-b border-border gap-2 overflow-x-auto"
 			>
 				<button
@@ -402,7 +403,7 @@ const confirmReject = async (reason: string) => {
 					/>
 					<ul
 						v-else-if="createdProjects.length > 0"
-						aria-label="Created projects"
+						:aria-label="$t('profile.createdList')"
 						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 					>
 						<li
@@ -424,11 +425,10 @@ const confirmReject = async (reason: string) => {
 						</div>
 						<div class="text-center">
 							<h3 class="font-semibold text-lg text-foreground">
-								No projects created yet
+								{{ $t('profile.emptyCreatedTitle') }}
 							</h3>
 							<p class="text-sm text-muted-foreground max-w-sm mt-1">
-								You haven't published any side projects. Share your unfinished
-								work with developers who will finish it.
+								{{ $t('profile.emptyCreatedBody') }}
 							</p>
 						</div>
 						<Button
@@ -436,7 +436,7 @@ const confirmReject = async (reason: string) => {
 							class="mt-2 flex items-center gap-2"
 						>
 							<NuxtLink to="/projects/create">
-								<Plus class="w-4 h-4" /> Publish your first project
+								<Plus class="w-4 h-4" /> {{ $t('profile.publishFirst') }}
 							</NuxtLink>
 						</Button>
 					</div>
@@ -448,7 +448,7 @@ const confirmReject = async (reason: string) => {
 				>
 					<ul
 						v-if="adoptedProjects.length > 0"
-						aria-label="Adopted projects"
+						:aria-label="$t('profile.adoptedList')"
 						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 					>
 						<li
@@ -470,11 +470,10 @@ const confirmReject = async (reason: string) => {
 						</div>
 						<div class="text-center">
 							<h3 class="font-semibold text-lg text-foreground">
-								No adopted projects
+								{{ $t('profile.emptyAdoptedTitle') }}
 							</h3>
 							<p class="text-sm text-muted-foreground max-w-sm mt-1">
-								You haven't adopted any projects yet. Browse the catalog to find
-								exciting codebases to continue.
+								{{ $t('profile.emptyAdoptedBody') }}
 							</p>
 						</div>
 						<Button
@@ -482,7 +481,7 @@ const confirmReject = async (reason: string) => {
 							class="mt-2"
 							variant="outline"
 						>
-							<NuxtLink to="/projects">Find a project</NuxtLink>
+							<NuxtLink to="/projects">{{ $t('profile.findProject') }}</NuxtLink>
 						</Button>
 					</div>
 				</div>
@@ -502,7 +501,7 @@ const confirmReject = async (reason: string) => {
 						<h2
 							class="text-md font-semibold text-foreground flex items-center gap-2"
 						>
-							Incoming Requests
+							{{ $t('profile.incoming') }}
 							<span
 								class="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground"
 							>
@@ -528,7 +527,7 @@ const confirmReject = async (reason: string) => {
 							v-else
 							class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center"
 						>
-							No incoming adoption requests at the moment.
+							{{ $t('profile.noIncoming') }}
 						</div>
 					</div>
 
@@ -536,7 +535,7 @@ const confirmReject = async (reason: string) => {
 						<h2
 							class="text-md font-semibold text-foreground flex items-center gap-2"
 						>
-							Outgoing Requests
+							{{ $t('profile.outgoing') }}
 							<span
 								class="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground"
 							>
@@ -560,7 +559,7 @@ const confirmReject = async (reason: string) => {
 							v-else
 							class="text-sm text-muted-foreground bg-card/40 p-6 rounded-xl border border-border text-center"
 						>
-							You haven't submitted any adoption requests yet.
+							{{ $t('profile.noOutgoing') }}
 						</div>
 					</div>
 				</div>
@@ -571,7 +570,7 @@ const confirmReject = async (reason: string) => {
 				>
 					<ul
 						v-if="applicantTransfers.length > 0"
-						aria-label="Your transfers"
+						:aria-label="$t('profile.transfersList')"
 						class="grid grid-cols-1 md:grid-cols-2 gap-6"
 					>
 						<li
@@ -590,12 +589,10 @@ const confirmReject = async (reason: string) => {
 						class="flex flex-col items-center justify-center py-16 gap-2 border border-dashed border-border rounded-2xl bg-card/50 text-center"
 					>
 						<h3 class="font-semibold text-lg text-foreground">
-							No transfers waiting
+							{{ $t('profile.noTransfersTitle') }}
 						</h3>
 						<p class="text-sm text-muted-foreground max-w-sm">
-							When an owner accepts your application, the repository transfer
-							shows up here. Accept it on GitHub first, then confirm receipt
-							here.
+							{{ $t('profile.noTransfersBody') }}
 						</p>
 					</div>
 				</div>
@@ -606,7 +603,7 @@ const confirmReject = async (reason: string) => {
 				>
 					<ul
 						v-if="bookmarkedProjects.length > 0"
-						aria-label="Bookmarked projects"
+						:aria-label="$t('profile.bookmarksList')"
 						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 					>
 						<li
@@ -631,11 +628,10 @@ const confirmReject = async (reason: string) => {
 						</div>
 						<div class="text-center">
 							<h3 class="font-semibold text-lg text-foreground">
-								No bookmarks yet
+								{{ $t('profile.emptyBookmarksTitle') }}
 							</h3>
 							<p class="text-sm text-muted-foreground max-w-sm mt-1">
-								Bookmark projects while browsing the catalog to come back to
-								them later.
+								{{ $t('profile.emptyBookmarksBody') }}
 							</p>
 						</div>
 						<Button
@@ -643,7 +639,7 @@ const confirmReject = async (reason: string) => {
 							class="mt-2"
 							variant="outline"
 						>
-							<NuxtLink to="/projects">Explore catalog</NuxtLink>
+							<NuxtLink to="/projects">{{ $t('profile.explore') }}</NuxtLink>
 						</Button>
 					</div>
 				</div>

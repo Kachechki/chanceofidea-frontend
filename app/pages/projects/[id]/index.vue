@@ -27,6 +27,7 @@ const requestsStore = useRequestsStore()
 const submitting = ref(false)
 const submitError = ref('')
 const { user } = useAuth()
+const { t, locale } = useI18n()
 const route = useRoute()
 const error = ref('')
 const loading = ref(true)
@@ -45,7 +46,7 @@ const onBookmark = () => {
 
 
 useHead({
-	title: computed(() => project.value?.title ?? 'Project'),
+	title: computed(() => project.value?.title ?? t('project.fallbackTitle')),
 })
 
 // load my applications so the button can show whether I already applied
@@ -108,19 +109,19 @@ const banner = computed(() =>
 // what the Apply button shows for the current viewer
 const applyState = computed(() => {
 	if (!user.value)
-		return { label: 'Log in to request adoption', canApply: true }
-	if (isOwner.value) return { label: 'This is your project', canApply: false }
+		return { label: t('project.apply.login'), canApply: true }
+	if (isOwner.value) return { label: t('project.apply.own'), canApply: false }
 	if (project.value?.status !== ProjectStatusEnum.PUBLISHED) {
-		return { label: 'Not open for requests', canApply: false }
+		return { label: t('project.apply.closed'), canApply: false }
 	}
 	if (myApplication.value) {
 		const label =
 			myApplication.value.status === ApplicationStatusEnum.ACCEPTED
-				? 'Request accepted'
-				: 'Request pending'
+				? t('project.apply.accepted')
+				: t('project.apply.pending')
 		return { label, canApply: false }
 	}
-	return { label: 'Request to adopt', canApply: true }
+	return { label: t('project.apply.request'), canApply: true }
 })
 
 const onApplyClick = () => {
@@ -150,7 +151,7 @@ const onSubmitApplication = async (form: {
 		})
 		showAdoption.value = false
 	} catch (err) {
-		submitError.value = requestsStore.error ?? 'Failed to send application'
+		submitError.value = requestsStore.error ?? t('errors.sendApplication')
 	} finally {
 		submitting.value = false
 	}
@@ -168,22 +169,22 @@ const readinessPercent = computed(() =>
 
 const readinessLabel = computed(() => {
 	const value = readinessPercent.value
-	if (value >= 100) return 'Ready to take over'
-	if (value >= 60) return 'Nearly there'
-	if (value >= 25) return 'In progress'
-	return 'Early stage'
+	if (value >= 100) return t('status.readiness.ready')
+	if (value >= 60) return t('status.readiness.nearly')
+	if (value >= 25) return t('status.readiness.progress')
+	return t('status.readiness.early')
 })
 
 const statusStyle = computed(() => {
 	switch (project.value?.status) {
 		case ProjectStatusEnum.PUBLISHED:
-			return { dot: 'bg-emerald-500', label: 'Published' }
+			return { dot: 'bg-emerald-500', label: t('status.project.PUBLISHED') }
 		case ProjectStatusEnum.TRANSFERRING:
-			return { dot: 'bg-amber-400', label: 'Transferring' }
+			return { dot: 'bg-amber-400', label: t('status.project.TRANSFERRING') }
 		case ProjectStatusEnum.ADOPTED:
-			return { dot: 'bg-blue-500', label: 'Adopted' }
+			return { dot: 'bg-blue-500', label: t('status.project.ADOPTED') }
 		case ProjectStatusEnum.DRAFT:
-			return { dot: 'bg-gray-500', label: 'Draft' }
+			return { dot: 'bg-gray-500', label: t('status.project.DRAFT') }
 		default:
 			return { dot: 'bg-emerald-500', label: project.value?.status ?? '' }
 	}
@@ -191,23 +192,26 @@ const statusStyle = computed(() => {
 
 const createdDate = computed(() => {
 	if (!project.value?.createdAt) return ''
-	return new Date(project.value.createdAt).toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric',
-	})
+	return new Date(project.value.createdAt).toLocaleDateString(
+		locale.value === 'uk' ? 'uk-UA' : 'en-US',
+		{
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+		},
+	)
 })
 
 onMounted(async () => {
 	const id = String(route.params.id ?? '')
 	if (!id) {
-		error.value = 'Id not provided'
+		error.value = t('project.missingId')
 		loading.value = false
 		return
 	}
 	const returned = await projectsStore.fetchProjectById(id)
 	if (returned) bookmarks.refresh(returned)
-	if (returned == null) error.value = 'Project not found'
+	if (returned == null) error.value = t('project.notFound')
 	loading.value = false
 })
 </script>
@@ -220,10 +224,10 @@ onMounted(async () => {
 		class="w-full flex flex-col items-center justify-center py-32 gap-4"
 	>
 		<p class="text-sm text-center text-destructive">
-			{{ error || 'Project not found' }}
+			{{ error || $t('project.notFound') }}
 		</p>
 		<Button as-child variant="outline">
-			<NuxtLink to="/projects">Back to catalog</NuxtLink>
+			<NuxtLink to="/projects">{{ $t('project.backToCatalog') }}</NuxtLink>
 		</Button>
 	</div>
 
@@ -275,7 +279,7 @@ onMounted(async () => {
 							aria-hidden="true"
 							:class="{ 'fill-current text-primary': isBookmarked }"
 						/>
-						{{ isBookmarked ? 'Bookmarked' : 'Bookmark' }}
+						{{ isBookmarked ? $t('project.bookmarked') : $t('project.bookmark') }}
 					</Button>
 					<Button
 						variant="outline"
@@ -294,7 +298,7 @@ onMounted(async () => {
 					>
 						<NuxtLink :to="`/projects/${project.id}/edit`">
 							<Pencil class="w-4 h-4" aria-hidden="true" />
-							Edit project
+							{{ $t('project.edit') }}
 						</NuxtLink>
 					</Button>
 					<Button as-child class="gap-2">
@@ -304,8 +308,8 @@ onMounted(async () => {
 							rel="noopener noreferrer"
 						>
 							<ExternalLink class="w-4 h-4" aria-hidden="true" />
-							Open repository
-							<span class="sr-only">(opens in a new tab)</span>
+							{{ $t('project.openRepo') }}
+							<span class="sr-only">{{ $t('common.newTab') }}</span>
 						</a>
 					</Button>
 				</div>
@@ -325,7 +329,7 @@ onMounted(async () => {
 			<div class="lg:col-span-2 flex flex-col gap-6">
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-5 md:p-8 flex flex-col gap-4">
-						<h2 class="text-lg font-semibold text-foreground">About</h2>
+						<h2 class="text-lg font-semibold text-foreground">{{ $t('project.about') }}</h2>
 						<p
 							class="text-muted-foreground leading-relaxed whitespace-pre-line"
 						>
@@ -339,7 +343,7 @@ onMounted(async () => {
 						<h2
 							class="flex items-center gap-2 text-lg font-semibold text-foreground"
 						>
-							<Tag class="w-4 h-4 text-muted-foreground" /> Tags
+							<Tag class="w-4 h-4 text-muted-foreground" /> {{ $t('project.tags') }}
 						</h2>
 						<div
 							v-if="project.tags?.length"
@@ -357,7 +361,7 @@ onMounted(async () => {
 							v-else
 							class="text-sm text-muted-foreground"
 						>
-							No tags yet.
+							{{ $t('project.noTags') }}
 						</p>
 					</CardContent>
 				</Card>
@@ -368,7 +372,7 @@ onMounted(async () => {
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-6 flex flex-col gap-5">
 						<div class="flex items-center justify-between">
-							<h2 class="text-lg font-semibold text-foreground">Readiness</h2>
+							<h2 class="text-lg font-semibold text-foreground">{{ $t('project.readiness') }}</h2>
 							<span class="text-xs font-medium text-muted-foreground">
 								{{ readinessLabel }}
 							</span>
@@ -394,11 +398,11 @@ onMounted(async () => {
 
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-6 flex flex-col gap-4">
-						<h2 class="text-lg font-semibold text-foreground">Details</h2>
+						<h2 class="text-lg font-semibold text-foreground">{{ $t('project.details') }}</h2>
 						<dl class="flex flex-col gap-3 text-sm">
 							<div class="flex items-center justify-between gap-4">
 								<dt class="flex items-center gap-2 text-muted-foreground">
-									<Sprout class="w-4 h-4" /> Status
+									<Sprout class="w-4 h-4" /> {{ $t('project.status') }}
 								</dt>
 								<dd class="font-medium text-foreground">
 									{{ statusStyle.label }}
@@ -406,7 +410,7 @@ onMounted(async () => {
 							</div>
 							<div class="flex items-center justify-between gap-4">
 								<dt class="flex items-center gap-2 text-muted-foreground">
-									<Folder class="w-4 h-4" /> Category
+									<Folder class="w-4 h-4" /> {{ $t('project.category') }}
 								</dt>
 								<dd class="font-medium text-foreground">
 									{{ project.category?.name ?? '—' }}
@@ -414,7 +418,7 @@ onMounted(async () => {
 							</div>
 							<div class="flex items-center justify-between gap-4">
 								<dt class="flex items-center gap-2 text-muted-foreground">
-									<Clock class="w-4 h-4" /> Created
+									<Clock class="w-4 h-4" /> {{ $t('project.created') }}
 								</dt>
 								<dd class="font-medium text-foreground">
 									{{ createdDate || '—' }}
@@ -426,7 +430,7 @@ onMounted(async () => {
 
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-6 flex flex-col gap-4">
-						<h2 class="text-lg font-semibold text-foreground">Owner</h2>
+						<h2 class="text-lg font-semibold text-foreground">{{ $t('project.owner') }}</h2>
 						<div class="flex items-center gap-3 min-w-0">
 							<img
 								v-if="project.owner?.avatarUrl"
@@ -440,7 +444,7 @@ onMounted(async () => {
 							/>
 							<div class="flex flex-col min-w-0">
 								<span class="font-semibold text-foreground truncate">
-									@{{ project.owner?.login ?? 'unknown' }}
+									@{{ project.owner?.login ?? $t('common.unknown') }}
 								</span>
 								<span
 									v-if="project.owner?.bio"
@@ -455,7 +459,7 @@ onMounted(async () => {
 
 				<Card class="rounded-2xl p-0">
 					<CardContent class="p-6 flex flex-col gap-4">
-						<h2 class="text-lg font-semibold text-foreground">Repository</h2>
+						<h2 class="text-lg font-semibold text-foreground">{{ $t('project.repository') }}</h2>
 						<p class="text-sm font-mono text-muted-foreground break-all">
 							{{ fullName }}
 						</p>
@@ -470,8 +474,8 @@ onMounted(async () => {
 								rel="noopener noreferrer"
 							>
 								<ExternalLink class="w-4 h-4" aria-hidden="true" />
-								View on GitHub
-								<span class="sr-only">(opens in a new tab)</span>
+								{{ $t('project.viewGithub') }}
+								<span class="sr-only">{{ $t('common.newTab') }}</span>
 							</a>
 						</Button>
 					</CardContent>

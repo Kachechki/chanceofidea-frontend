@@ -31,8 +31,9 @@ const route = useRoute()
 const projectId = route.params.id as string
 
 const { user, ready } = useAuth()
+const { t } = useI18n()
 
-useHead({ title: 'Edit Project' })
+useHead({ title: computed(() => t('projectForm.editTitle')) })
 
 const projectsStore = useProjectsStore()
 const requestsStore = useRequestsStore()
@@ -79,7 +80,7 @@ let allowLeave = false
 
 onBeforeRouteLeave(() => {
     if (allowLeave || !isDirty.value) return true
-    return window.confirm('You have unsaved changes. Leave this page anyway?')
+    return window.confirm(t('common.unsavedLeave'))
 })
 
 const warnOnUnload = (event: BeforeUnloadEvent) => {
@@ -166,7 +167,7 @@ const confirmDelete = async () => {
         allowLeave = true
         await navigateTo('/me')
     } catch (err) {
-        deleteError.value = errorMessage(err, 'Failed to delete project')
+        deleteError.value = errorMessage(err, t('errors.deleteProject'))
     } finally {
         deleting.value = false
     }
@@ -209,7 +210,7 @@ const submit = async (publish = false) => {
         allowLeave = true
         await navigateTo(`/projects/${projectId}`)
     } catch (err) {
-        const fallback = publish && saved ? 'Changes saved, but publishing failed' : 'Failed to save project'
+        const fallback = publish && saved ? t('errors.saveThenPublish') : t('errors.saveProject')
         serverError.value = errorMessage(err, fallback)
     } finally {
         saving.value = false
@@ -228,12 +229,12 @@ const fieldClass =
             v-else-if="!user"
             class="flex flex-col items-center justify-center py-24 gap-4 border border-dashed border-border rounded-2xl bg-card/50"
         >
-            <h2 class="font-semibold text-lg text-foreground">Log in to edit project</h2>
+            <h2 class="font-semibold text-lg text-foreground">{{ $t('projectForm.loginToEdit') }}</h2>
             <Button
                 as-child
                 class="mt-2"
             >
-                <NuxtLink to="/login">Log in</NuxtLink>
+                <NuxtLink to="/login">{{ $t('common.login') }}</NuxtLink>
             </Button>
         </div>
 
@@ -242,9 +243,9 @@ const fieldClass =
             class="rounded-2xl"
         >
             <CardHeader>
-                <CardTitle class="text-2xl">Edit project</CardTitle>
+                <CardTitle class="text-2xl">{{ $t('projectForm.editHeading') }}</CardTitle>
                 <CardDescription>
-                    Update your project details.
+                    {{ $t('projectForm.editDescription') }}
                 </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
@@ -258,7 +259,7 @@ const fieldClass =
                         role="status"
                         class="rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
                     >
-                        This project is being transferred or has been adopted, so it can't be edited right now.
+                        {{ $t('projectForm.locked') }}
                     </p>
 
                     <fieldset
@@ -269,7 +270,7 @@ const fieldClass =
                         <label
                             for="title"
                             class="text-sm font-medium text-foreground"
-                        >Title</label>
+                        >{{ $t('projectForm.title') }}</label>
                         <Input
                             id="title"
                             v-model="form.title"
@@ -284,12 +285,12 @@ const fieldClass =
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <span class="text-sm font-medium text-foreground">Repository</span>
+                        <span class="text-sm font-medium text-foreground">{{ $t('projectForm.repository') }}</span>
                         <p class="text-sm font-mono text-muted-foreground break-all">
-                            {{ repositoryName || 'Unknown repository' }}
+                            {{ repositoryName || $t('projectForm.unknownRepository') }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            The repository is fixed once a project is published.
+                            {{ $t('projectForm.repositoryFixed') }}
                         </p>
                     </div>
 
@@ -297,7 +298,7 @@ const fieldClass =
                         <label
                             for="description"
                             class="text-sm font-medium text-foreground"
-                        >Description</label>
+                        >{{ $t('projectForm.description') }}</label>
                         <textarea
                             id="description"
                             v-model="form.description"
@@ -317,7 +318,7 @@ const fieldClass =
                         <label
                             for="category"
                             class="text-sm font-medium text-foreground"
-                        >Category</label>
+                        >{{ $t('projectForm.category') }}</label>
                         <select
                             id="category"
                             v-model="form.categoryId"
@@ -329,7 +330,7 @@ const fieldClass =
                                 value=""
                                 disabled
                             >
-                                Select a category
+                                {{ $t('projectForm.selectCategory') }}
                             </option>
                             <option
                                 v-for="cat in selectableCategories"
@@ -349,7 +350,7 @@ const fieldClass =
                         <span
                             id="edit-tags-label"
                             class="text-sm font-medium text-foreground"
-                        >Tags</span>
+                        >{{ $t('projectForm.tags') }}</span>
                         <div
                             class="flex flex-wrap gap-2"
                             role="group"
@@ -382,7 +383,7 @@ const fieldClass =
                             for="readiness"
                             class="text-sm font-medium text-foreground"
                         >
-                            Readiness: {{ form.readinessPercent }}%
+                            {{ $t('projectForm.readiness', { percent: form.readinessPercent }) }}
                         </label>
                         <input
                             id="readiness"
@@ -412,14 +413,14 @@ const fieldClass =
                             :disabled="loading || saving || isLocked"
                             @click="openDelete"
                         >
-                            Delete project
+                            {{ $t('projectForm.delete') }}
                         </Button>
                         <div class="ml-auto flex items-center gap-3">
                             <Button
                                 as-child
                                 variant="outline"
                             >
-                                <NuxtLink :to="`/projects/${projectId}`">Cancel</NuxtLink>
+                                <NuxtLink :to="`/projects/${projectId}`">{{ $t('projectForm.cancel') }}</NuxtLink>
                             </Button>
                             <Button
                                 type="button"
@@ -427,7 +428,7 @@ const fieldClass =
                                 :disabled="loading || saving || isLocked"
                                 @click="submit(false)"
                             >
-                                Save changes
+                                {{ $t('projectForm.saveChanges') }}
                             </Button>
                             <Button
                                 v-if="isDraft"
@@ -435,7 +436,7 @@ const fieldClass =
                                 :disabled="loading || saving || isLocked"
                                 @click="submit(true)"
                             >
-                                {{ saving ? 'Publishing...' : 'Publish' }}
+                                {{ saving ? $t('projectForm.publishing') : $t('projectForm.publish') }}
                             </Button>
                         </div>
                     </div>

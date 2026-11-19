@@ -21,19 +21,19 @@
           id="transfer-action-title"
           :class="['text-xl font-bold', isDecline ? 'text-destructive' : 'text-foreground']"
         >
-          {{ isDecline ? 'Decline this transfer' : 'Confirm you received the repository' }}
+          {{ isDecline ? $t('modals.action.declineTitle') : $t('modals.action.confirmTitle') }}
         </h2>
         <button
           type="button"
           class="text-muted-foreground hover:text-foreground"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
           @click="emit('close')"
         >
           <span aria-hidden="true">✕</span>
         </button>
       </div>
 
-      <p class="mt-4 text-sm font-medium text-foreground">What happens next</p>
+      <p class="mt-4 text-sm font-medium text-foreground">{{ $t('modals.action.next') }}</p>
       <ol id="transfer-action-steps" class="mt-2 list-decimal pl-5 flex flex-col gap-2 text-sm text-muted-foreground">
         <li v-for="step in steps" :key="step">{{ step }}</li>
       </ol>
@@ -48,7 +48,7 @@
             type="checkbox"
             class="mt-0.5 rounded border-input text-primary focus:ring-ring"
           />
-          <span>I accepted the transfer on GitHub, and this repository is now under my account.</span>
+          <span>{{ $t('modals.action.checkbox') }}</span>
         </label>
 
         <div
@@ -59,7 +59,7 @@
             for="transfer-action-input"
             class="text-sm font-medium"
           >
-            To confirm, type the repository name <span class="font-mono">{{ repoName }}</span> below
+            {{ $t('modals.action.confirmLabel', { repo: repoName }) }}
           </label>
           <input
             id="transfer-action-input"
@@ -87,7 +87,7 @@
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
             @click="emit('close')"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             v-if="isDecline"
@@ -96,7 +96,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isLoading ? 'Declining...' : 'I do not want it' }}
+            {{ isLoading ? $t('modals.action.declining') : $t('modals.action.decline') }}
           </button>
           <button
             v-else
@@ -105,7 +105,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isLoading ? 'Confirming...' : 'I have received it' }}
+            {{ isLoading ? $t('modals.action.confirming') : $t('modals.action.received') }}
           </button>
         </div>
       </form>
@@ -138,17 +138,19 @@ const typed = ref('')
 const isDecline = computed(() => props.mode === 'decline')
 
 // the steps differ by action, but both live in this one dialog
+const { t } = useI18n()
+
 const steps = computed(() =>
   isDecline.value
     ? [
-        `The repository stays with @${props.ownerLogin}.`,
-        'The project goes back to open for applications.',
-        'Your request is marked as declined. This cannot be undone from here.',
+        t('modals.action.decline1', { owner: props.ownerLogin }),
+        t('modals.action.decline2'),
+        t('modals.action.decline3'),
       ]
     : [
-        'Open your GitHub notifications and accept the transfer request for this repository.',
-        'Check that the repository now appears under your account on GitHub.',
-        'Confirm here. This records the handover and marks the project as adopted.',
+        t('modals.action.confirm1'),
+        t('modals.action.confirm2'),
+        t('modals.action.confirm3'),
       ]
 )
 

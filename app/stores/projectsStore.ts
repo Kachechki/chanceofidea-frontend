@@ -116,7 +116,7 @@ export const useProjectsStore = defineStore('projects', {
 				this.hasNextPage = result.length === PROJECTS_PAGE_SIZE
 			} catch (err) {
 				if (requestId !== projectsRequestId) return
-				this.error = errorMessage(err, 'Failed to load projects')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadProjects'))
 			} finally {
 				if (requestId === projectsRequestId) this.loading = false
 			}
@@ -161,7 +161,7 @@ export const useProjectsStore = defineStore('projects', {
 				return project
 			} catch (err) {
 				this.currentProject = null
-				this.error = errorMessage(err, 'Failed to load project')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadProject'))
 				return null
 			} finally {
 				this.loading = false
@@ -176,7 +176,7 @@ export const useProjectsStore = defineStore('projects', {
 				this.myProjects = me.projects ?? []
 			} catch (err) {
 				this.myProjects = []
-				this.error = errorMessage(err, 'Failed to load your projects')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadMyProjects'))
 			} finally {
 				this.loading = false
 			}
@@ -188,7 +188,7 @@ export const useProjectsStore = defineStore('projects', {
 			try {
 				await $fetch('/api/project', { method: 'POST', body: input })
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to create project')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.createProject'))
 				throw err
 			} finally {
 				this.loading = false
@@ -212,10 +212,11 @@ export const useProjectsStore = defineStore('projects', {
 				this.githubRepos = []
 				// the backend returns 500 when github rejects the stored token, so treat it like a 401
 				const status = (err as { statusCode?: number })?.statusCode
+				const { $i18n } = useNuxtApp()
 				this.githubReposError =
 					status === 401 || status === 403 || status === 500
-						? 'Your GitHub access has expired. Log in again to refresh it, then reload to see your repositories.'
-						: 'Could not load your repositories. Try again later.'
+						? $i18n.t('errors.githubExpired')
+						: $i18n.t('errors.githubLoad')
 			} finally {
 				this.githubReposLoading = false
 			}
@@ -225,7 +226,7 @@ export const useProjectsStore = defineStore('projects', {
 			try {
 				this.categories = await $fetch<CategoryEntity[]>('/api/category')
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to load categories')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadCategories'))
 			}
 		},
 
@@ -233,7 +234,7 @@ export const useProjectsStore = defineStore('projects', {
 			try {
 				this.tags = await $fetch<TagEntity[]>('/api/tag')
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to load tags')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadTags'))
 			}
 		},
 

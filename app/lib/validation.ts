@@ -60,44 +60,48 @@ export const validateText = (
 	value: string,
 	label: string,
 	max: number,
-	requiredMessage = `${label} is required`
+	requiredMessage?: string
 ) => {
+	const { $i18n } = useNuxtApp()
 	const length = value.trim().length
-	if (!length) return requiredMessage
-	if (length > max) return `${label} must be ${max} characters or less`
+	if (!length)
+		return requiredMessage ?? $i18n.t('validation.required', { field: label })
+	if (length > max)
+		return $i18n.t('validation.maxLength', { field: label, max })
 	return ''
 }
 
 export const validateUrl = (value: string, label: string, required = false) => {
+	const { $i18n } = useNuxtApp()
 	const url = value.trim()
-	if (!url) return required ? `${label} is required` : ''
+	if (!url) return required ? $i18n.t('validation.required', { field: label }) : ''
 	if (url.length > LIMITS.url)
-		return `${label} must be ${LIMITS.url} characters or less`
-	return isHttpUrl(url) ? '' : `${label} must be a valid http or https link`
+		return $i18n.t('validation.maxLength', { field: label, max: LIMITS.url })
+	return isHttpUrl(url) ? '' : $i18n.t('validation.urlInvalid', { field: label })
 }
 
 export const validateRepository = (
 	value: string,
 	ownerLogin?: string | null
 ) => {
-	if (!value.trim()) return 'Repository is required'
+	const { $i18n } = useNuxtApp()
+	if (!value.trim()) return $i18n.t('validation.repoRequired')
 
 	const parsed = parseRepoInput(value)
-	if (!parsed)
-		return 'Enter a repository name or a GitHub URL like github.com/owner/repo'
+	if (!parsed) return $i18n.t('validation.repoFormat')
 
 	if (
 		parsed.owner &&
 		ownerLogin &&
 		parsed.owner.toLowerCase() !== ownerLogin.toLowerCase()
 	) {
-		return `Repository must belong to @${ownerLogin}`
+		return $i18n.t('validation.repoOwner', { login: ownerLogin })
 	}
 	return ''
 }
 
 export const validateTerms = (accepted: boolean) =>
-	accepted ? '' : 'You must accept the transfer terms'
+	accepted ? '' : useNuxtApp().$i18n.t('validation.terms')
 
 export const hasErrors = (errors: Record<string, string | undefined>) =>
 	Object.values(errors).some(Boolean)
@@ -123,15 +127,16 @@ export const validateProjectForm = (
 	values: ProjectFormValues,
 	ownerLogin?: string | null
 ): ProjectFormErrors => {
+	const { $i18n } = useNuxtApp()
 	const errors: ProjectFormErrors = {
-		title: validateText(values.title, 'Title', LIMITS.title),
+		title: validateText(values.title, $i18n.t('projectForm.title'), LIMITS.title),
 		description: validateText(
 			values.description,
-			'Description',
+			$i18n.t('projectForm.description'),
 			LIMITS.description
 		),
-		categoryId: values.categoryId ? '' : 'Category is required',
-		tags: values.tags.length > 0 ? '' : 'At least one tag is required',
+		categoryId: values.categoryId ? '' : $i18n.t('validation.categoryRequired'),
+		tags: values.tags.length > 0 ? '' : $i18n.t('validation.tagRequired'),
 	}
 	if (values.repository !== undefined) {
 		errors.repository = validateRepository(values.repository, ownerLogin)

@@ -26,6 +26,7 @@ const toRequestView = (
 	application: ApplicationEntity,
 	mode: 'incoming' | 'outgoing',
 ): AdoptionRequestEntity => {
+	const { $i18n } = useNuxtApp()
 	const viewer = mode === 'incoming' ? 'owner' : 'applicant'
 	const applicantLogin = application.applicant?.login ?? ''
 	const ownerLogin = application.project?.owner?.login ?? ''
@@ -44,7 +45,9 @@ const toRequestView = (
 						ownerLogin,
 						reason: application.rejectReason,
 					}),
-		createdAt: new Date(application.createdAt).toLocaleDateString('uk-UA'),
+		createdAt: new Date(application.createdAt).toLocaleDateString(
+			$i18n.locale.value === 'uk' ? 'uk-UA' : 'en-US',
+		),
 		status: STATUS_LABEL[application.status],
 		whyMe: application.whyMe,
 		actionPlan: application.plan ?? '',
@@ -53,12 +56,12 @@ const toRequestView = (
 			mode === 'incoming'
 				? {
 						id: application.applicant?.id ?? '',
-						name: application.applicant?.login ?? 'unknown',
+						name: application.applicant?.login ?? $i18n.t('common.unknown'),
 						avatar: application.applicant?.avatarUrl,
 					}
 				: {
 						id: application.project?.id ?? '',
-						name: application.project?.title ?? 'Unknown project',
+						name: application.project?.title ?? $i18n.t('common.unknownProject'),
 						avatar: application.project?.owner?.avatarUrl,
 					},
 	}
@@ -108,7 +111,7 @@ export const useRequestsStore = defineStore('requests', {
 				)
 			} catch (err) {
 				this.incoming = []
-				this.error = errorMessage(err, 'Failed to load incoming applications')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadIncoming'))
 			} finally {
 				this.loading = false
 			}
@@ -123,7 +126,7 @@ export const useRequestsStore = defineStore('requests', {
 				)
 			} catch (err) {
 				this.outgoing = []
-				this.error = errorMessage(err, 'Failed to load your applications')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.loadOutgoing'))
 			} finally {
 				this.loading = false
 			}
@@ -147,7 +150,7 @@ export const useRequestsStore = defineStore('requests', {
 					},
 				})
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to send application')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.sendApplication'))
 				throw err
 			}
 			await this.fetchOutgoing()
@@ -162,7 +165,7 @@ export const useRequestsStore = defineStore('requests', {
 					query: { applicationId },
 				})
 			} catch (err) {
-				this.error = errorMessage(err, 'Could not confirm the transfer')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.confirmTransfer'))
 				throw err
 			}
 			await this.fetchOutgoing()
@@ -177,7 +180,7 @@ export const useRequestsStore = defineStore('requests', {
 					query: { applicationId },
 				})
 			} catch (err) {
-				this.error = errorMessage(err, 'Could not decline the transfer')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.declineTransfer'))
 				throw err
 			}
 			await this.fetchOutgoing()
@@ -189,7 +192,7 @@ export const useRequestsStore = defineStore('requests', {
 				application &&
 				!canTransition(application.status, ApplicationStatusEnum.ACCEPTED)
 			) {
-				throw new Error('This application is already decided')
+				throw new Error(useNuxtApp().$i18n.t('errors.alreadyDecided'))
 			}
 
 			this.error = null
@@ -204,7 +207,7 @@ export const useRequestsStore = defineStore('requests', {
 					},
 				})
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to accept application')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.acceptApplication'))
 				throw err
 			}
 			await this.fetchIncoming()
@@ -216,7 +219,7 @@ export const useRequestsStore = defineStore('requests', {
 				application &&
 				!canTransition(application.status, ApplicationStatusEnum.REJECTED)
 			) {
-				throw new Error('This application is already decided')
+				throw new Error(useNuxtApp().$i18n.t('errors.alreadyDecided'))
 			}
 
 			this.error = null
@@ -231,7 +234,7 @@ export const useRequestsStore = defineStore('requests', {
 					body: { rejectReason: reason },
 				})
 			} catch (err) {
-				this.error = errorMessage(err, 'Failed to reject application')
+				this.error = errorMessage(err, useNuxtApp().$i18n.t('errors.rejectApplication'))
 				throw err
 			}
 			await this.fetchIncoming()

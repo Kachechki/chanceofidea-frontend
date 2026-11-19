@@ -13,12 +13,12 @@
       @keydown.esc="emit('close')"
     >
       <div class="flex items-center justify-between pb-4 border-b border-border">
-        <h2 id="adoption-title" class="text-xl font-bold">Submit Adoption Request</h2>
+        <h2 id="adoption-title" class="text-xl font-bold">{{ $t('modals.adoption.title') }}</h2>
         <button
           type="button"
           @click="emit('close')"
           class="text-muted-foreground hover:text-foreground"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
         >
           <span aria-hidden="true">✕</span>
         </button>
@@ -26,13 +26,13 @@
 
       <form novalidate @submit.prevent="handleSubmit" class="mt-4 space-y-4">
         <div>
-          <label for="adoption-why" class="block text-sm font-medium mb-1">Why you?</label>
+          <label for="adoption-why" class="block text-sm font-medium mb-1">{{ $t('modals.adoption.whyYou') }}</label>
           <textarea
             id="adoption-why"
             v-model="form.whyMe"
             rows="3"
             :maxlength="LIMITS.whyMe"
-            placeholder="Tell us why this project should go to you..."
+            :placeholder="$t('modals.adoption.whyPlaceholder')"
             :aria-invalid="!!errors.whyMe"
             :aria-describedby="errors.whyMe ? 'adoption-why-error' : undefined"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -41,13 +41,13 @@
         </div>
 
         <div>
-          <label for="adoption-plan" class="block text-sm font-medium mb-1">Your Action Plan (2-4 weeks horizon)</label>
+          <label for="adoption-plan" class="block text-sm font-medium mb-1">{{ $t('modals.adoption.plan') }}</label>
           <textarea
             id="adoption-plan"
             v-model="form.actionPlan"
             rows="3"
             :maxlength="LIMITS.actionPlan"
-            placeholder="Describe your first steps after getting the project..."
+            :placeholder="$t('modals.adoption.planPlaceholder')"
             :aria-invalid="!!errors.actionPlan"
             :aria-describedby="errors.actionPlan ? 'adoption-plan-error' : undefined"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -56,12 +56,12 @@
         </div>
 
         <div>
-          <label for="adoption-portfolio" class="block text-sm font-medium mb-1">GitHub / LinkedIn / Portfolio URL</label>
+          <label for="adoption-portfolio" class="block text-sm font-medium mb-1">{{ $t('modals.adoption.portfolio') }}</label>
           <input
             id="adoption-portfolio"
             type="url"
             v-model="form.portfolioUrl"
-            placeholder="https://github.com/username"
+            :placeholder="$t('modals.adoption.portfolioPlaceholder')"
             :aria-invalid="!!errors.portfolioUrl"
             :aria-describedby="errors.portfolioUrl ? 'adoption-portfolio-error' : undefined"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -80,7 +80,7 @@
               class="rounded border-input text-primary focus:ring-ring"
             />
             <label for="terms" class="text-sm text-muted-foreground">
-              I agree with the project transfer terms set by the author
+              {{ $t('modals.adoption.terms') }}
             </label>
           </div>
           <FieldError id="terms-error" :message="errors.acceptTerms" />
@@ -94,7 +94,7 @@
             @click="emit('close')"
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             type="submit"
@@ -102,7 +102,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {{ isLoading ? 'Sending...' : 'Submit Request' }}
+            {{ isLoading ? $t('modals.adoption.sending') : $t('modals.adoption.submit') }}
           </button>
         </div>
       </form>
@@ -151,11 +151,13 @@ const errors = reactive({
 
 const attempted = ref(false)
 
+const { t } = useI18n()
+
 const validateForm = () => {
   const result = {
-    whyMe: validateText(form.whyMe, 'Why you', LIMITS.whyMe, 'Tell the owner why you are the right person'),
-    actionPlan: validateText(form.actionPlan, 'Action plan', LIMITS.actionPlan, 'Describe your first steps'),
-    portfolioUrl: validateUrl(form.portfolioUrl, 'Portfolio URL', true),
+    whyMe: validateText(form.whyMe, t('modals.adoption.whyYou'), LIMITS.whyMe, t('modals.adoption.whyRequired')),
+    actionPlan: validateText(form.actionPlan, t('modals.adoption.plan'), LIMITS.actionPlan, t('modals.adoption.planRequired')),
+    portfolioUrl: validateUrl(form.portfolioUrl, t('modals.adoption.portfolio'), true),
     acceptTerms: validateTerms(form.acceptTerms),
   }
   Object.assign(errors, result)

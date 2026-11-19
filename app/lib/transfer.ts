@@ -54,6 +54,7 @@ interface CopyContext {
 
 // the title and numbered steps shown to each side for a stage
 export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => {
+	const { $i18n } = useNuxtApp()
 	const applicant = ctx.applicantLogin
 	const owner = ctx.ownerLogin
 
@@ -62,66 +63,68 @@ export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => 
 			case 'review':
 				return {
 					variant: 'info',
-					title: 'Review this application',
+					title: $i18n.t('transfer.owner.reviewTitle'),
 					steps: [
-						'Read the motivation and the action plan.',
-						'Accept to start the GitHub transfer, or reject with a reason.',
+						$i18n.t('transfer.owner.review1'),
+						$i18n.t('transfer.owner.review2'),
 					],
 				}
 			case 'waiting-applicant':
 				return {
 					variant: 'warning',
-					title: `Waiting for @${applicant} to take over the repository`,
+					title: $i18n.t('transfer.owner.waitingTitle', { applicant }),
 					steps: [
-						`GitHub has sent @${applicant} a transfer request. They have to accept it on GitHub.`,
-						`Then they confirm receipt here. The project becomes adopted.`,
-						'Nothing to do for you right now.',
+						$i18n.t('transfer.owner.waiting1', { applicant }),
+						$i18n.t('transfer.owner.waiting2'),
+						$i18n.t('transfer.owner.waiting3'),
 					],
 				}
 			case 'adopted':
 				return {
 					variant: 'success',
-					title: `Transferred to @${applicant}`,
+					title: $i18n.t('transfer.owner.adoptedTitle', { applicant }),
 					steps: [
-						`The repository now belongs to @${applicant}.`,
-						'The project is marked as adopted.',
+						$i18n.t('transfer.owner.adopted1', { applicant }),
+						$i18n.t('transfer.owner.adopted2'),
 					],
 				}
 			case 'declined':
 				return {
 					variant: 'neutral',
-					title: `@${applicant} declined the transfer`,
+					title: $i18n.t('transfer.owner.declinedTitle', { applicant }),
 					steps: [
-						'The repository stays with you.',
-						'The project is open for applications again.',
+						$i18n.t('transfer.owner.declined1'),
+						$i18n.t('transfer.owner.declined2'),
 					],
 				}
 			case 'failed':
 				return {
 					variant: 'danger',
-					title: 'The GitHub transfer request failed',
+					title: $i18n.t('transfer.owner.failedTitle'),
 					steps: [
-						'Nothing changed on the repository.',
-						'The project was returned to draft. Republish it to open it for applications again.',
-						'If this keeps happening, check the GitHub App permissions.',
+						$i18n.t('transfer.owner.failed1'),
+						$i18n.t('transfer.owner.failed2'),
+						$i18n.t('transfer.owner.failed3'),
 					],
 				}
 			case 'rejected':
 				return {
 					variant: 'neutral',
-					title: 'You rejected this application',
+					title: $i18n.t('transfer.owner.rejectedTitle'),
 					steps: [
-						ctx.reason ? `The applicant sees your reason: ${ctx.reason}` : 'The applicant sees your reason.',
-						'The project stays open for other applicants.',
+						ctx.reason
+							? $i18n.t('transfer.owner.rejectedReason', { reason: ctx.reason })
+							: $i18n.t('transfer.owner.rejectedNoReason'),
+						$i18n.t('transfer.owner.rejectedOpen'),
 					],
 				}
 			case 'closed':
 				return {
 					variant: 'neutral',
-					title: 'This transfer is closed',
+					title: $i18n.t('transfer.owner.closedTitle'),
 					steps: [
-						'The repository was not transferred to the applicant.',
-						'The project is open again, or in draft if the transfer failed.',
+						$i18n.t('transfer.owner.closed1'),
+						$i18n.t('transfer.owner.closed2'),
 					],
 				}
 			default:
@@ -133,65 +136,67 @@ export const stageCopy = (stage: TransferStage, ctx: CopyContext): StageCopy => 
 		case 'waiting-owner':
 			return {
 				variant: 'info',
-				title: 'Waiting for the owner to review your request',
+				title: $i18n.t('transfer.applicant.waitingTitle'),
 				steps: [
-					'The owner sees your request on their Requests tab.',
-					'If they accept, you will be asked to take over the repository on GitHub.',
+					$i18n.t('transfer.applicant.waiting1'),
+					$i18n.t('transfer.applicant.waiting2'),
 				],
 			}
 		case 'action-needed':
 			return {
 				variant: 'warning',
-				title: 'Action needed: accept the repository on GitHub',
+				title: $i18n.t('transfer.applicant.actionTitle'),
 				steps: [
-					'Open your GitHub notifications and accept the transfer request for this repository.',
-					'Come back to the Transfers tab and confirm that you received it.',
-					`If you do not want the repository, decline instead. It goes back to @${owner}.`,
+					$i18n.t('transfer.applicant.action1'),
+					$i18n.t('transfer.applicant.action2'),
+					$i18n.t('transfer.applicant.action3', { owner }),
 				],
 			}
 		case 'adopted':
 			return {
 				variant: 'success',
-				title: 'You own this repository now',
+				title: $i18n.t('transfer.applicant.adoptedTitle'),
 				steps: [
-					'The repository is on your GitHub account.',
-					'The project is listed as adopted.',
+					$i18n.t('transfer.applicant.adopted1'),
+					$i18n.t('transfer.applicant.adopted2'),
 				],
 			}
 		case 'declined':
 			return {
 				variant: 'neutral',
-				title: 'You declined this transfer',
+				title: $i18n.t('transfer.applicant.declinedTitle'),
 				steps: [
-					`The repository stays with @${owner}.`,
-					'The project is open for applications again.',
+					$i18n.t('transfer.applicant.declined1', { owner }),
+					$i18n.t('transfer.applicant.declined2'),
 				],
 			}
 		case 'failed':
 			return {
 				variant: 'danger',
-				title: 'The transfer could not start',
+				title: $i18n.t('transfer.applicant.failedTitle'),
 				steps: [
-					'GitHub did not send the transfer request, so nothing changed.',
-					'The project is a draft again. The owner has to republish it before you can apply.',
+					$i18n.t('transfer.applicant.failed1'),
+					$i18n.t('transfer.applicant.failed2'),
 				],
 			}
 		case 'closed':
 			return {
 				variant: 'neutral',
-				title: 'This transfer is closed',
+				title: $i18n.t('transfer.applicant.closedTitle'),
 				steps: [
-					`The repository was not transferred to you.`,
-					'The project is no longer waiting on your answer.',
+					$i18n.t('transfer.applicant.closed1'),
+					$i18n.t('transfer.applicant.closed2'),
 				],
 			}
 		case 'rejected':
 			return {
 				variant: 'neutral',
-				title: `@${owner} declined your request`,
+				title: $i18n.t('transfer.applicant.rejectedTitle', { owner }),
 				steps: [
-					ctx.reason ? `Reason: ${ctx.reason}` : 'No reason was given.',
-					'You can apply to other projects.',
+					ctx.reason
+						? $i18n.t('transfer.applicant.rejectedReason', { reason: ctx.reason })
+						: $i18n.t('transfer.applicant.rejectedNoReason'),
+					$i18n.t('transfer.applicant.rejectedOther'),
 				],
 			}
 		default:
@@ -212,25 +217,26 @@ export const projectBanner = (
 	project: ProjectEntity,
 	ctx: ProjectBannerContext
 ): StageCopy | null => {
-	const ownerLogin = project.owner?.login ?? 'unknown'
+	const { $i18n } = useNuxtApp()
+	const ownerLogin = project.owner?.login ?? $i18n.t('common.unknown')
 
 	if (project.status === ProjectStatusEnum.ADOPTED) {
 		if (ctx.isOwner) {
 			return {
 				variant: 'success',
-				title: 'You adopted this project',
+				title: $i18n.t('transfer.banner.ownerAdoptedTitle'),
 				steps: [
-					'The repository is on your GitHub account.',
-					'The project is no longer open for applications.',
+					$i18n.t('transfer.banner.ownerAdopted1'),
+					$i18n.t('transfer.banner.ownerAdopted2'),
 				],
 			}
 		}
 		return {
 			variant: 'success',
-			title: `Adopted by @${ownerLogin}`,
+			title: $i18n.t('transfer.banner.adoptedByTitle', { owner: ownerLogin }),
 			steps: [
-				`The repository belongs to @${ownerLogin} now.`,
-				'The project is no longer open for applications.',
+				$i18n.t('transfer.banner.adoptedBy1', { owner: ownerLogin }),
+				$i18n.t('transfer.banner.adoptedBy2'),
 			],
 		}
 	}
@@ -238,7 +244,7 @@ export const projectBanner = (
 	if (project.status === ProjectStatusEnum.TRANSFERRING) {
 		if (ctx.accepted) {
 			const viewer: Viewer = ctx.isOwner ? 'owner' : 'applicant'
-			const applicantLogin = ctx.accepted.applicant?.login ?? 'unknown'
+			const applicantLogin = ctx.accepted.applicant?.login ?? $i18n.t('common.unknown')
 			return stageCopy(applicationStage(ctx.accepted, viewer), {
 				viewer,
 				applicantLogin,
@@ -247,8 +253,8 @@ export const projectBanner = (
 		}
 		return {
 			variant: 'info',
-			title: 'This project is being transferred to a new owner',
-			steps: ['Nothing to do here. The outcome will appear on this page.'],
+			title: $i18n.t('transfer.banner.transferringTitle'),
+			steps: [$i18n.t('transfer.banner.transferring1')],
 		}
 	}
 

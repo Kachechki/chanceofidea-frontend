@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Button } from '~/widgets/ui/button'
 
-useHead({ title: 'Signing in' })
+const { t } = useI18n()
+useHead({ title: computed(() => t('auth.signingIn')) })
 
 const route = useRoute()
 const { fetchMe } = useAuth()
@@ -13,7 +14,7 @@ onMounted(async () => {
 
 	const code = String(route.query.code ?? '')
 	if (!code || !expected || route.query.state !== expected) {
-		error.value = 'Invalid login response'
+		error.value = t('auth.invalid')
 		return
 	}
 
@@ -22,7 +23,7 @@ onMounted(async () => {
 		await fetchMe()
 		await navigateTo('/')
 	} catch {
-		error.value = 'Login failed'
+		error.value = t('auth.failed')
 	}
 })
 </script>
@@ -32,7 +33,7 @@ onMounted(async () => {
 		<template v-if="error">
 			<p role="alert" class="text-destructive font-medium">{{ error }}</p>
 			<Button as-child variant="outline">
-				<NuxtLink to="/login">Back to login</NuxtLink>
+				<NuxtLink to="/login">{{ $t('auth.backToLogin') }}</NuxtLink>
 			</Button>
 		</template>
 		<LoadingSpinner v-else />

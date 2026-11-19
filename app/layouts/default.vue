@@ -5,7 +5,7 @@ import Footer from '~/widgets/Footer.vue'
 
 <template>
   <div class="min-h-screen flex flex-col bg-background text-foreground">
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#main-content" class="skip-link">{{ $t('layout.skipToContent') }}</a>
     <Header />
     <main id="main-content" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />

@@ -15,12 +15,12 @@
     >
       <div class="flex items-start justify-between gap-4 pb-4 border-b border-destructive/30">
         <h2 id="delete-project-title" class="text-xl font-bold text-destructive">
-          {{ isPublished ? 'Delete published project' : 'Delete draft' }}
+          {{ isPublished ? $t('modals.delete.publishedTitle') : $t('modals.delete.draftTitle') }}
         </h2>
         <button
           type="button"
           class="text-muted-foreground hover:text-foreground"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
           @click="emit('close')"
         >
           <span aria-hidden="true">✕</span>
@@ -28,37 +28,24 @@
       </div>
 
       <div id="delete-project-warning" class="mt-4 flex flex-col gap-3 text-sm">
-        <p class="font-semibold text-destructive">This action cannot be undone.</p>
+        <p class="font-semibold text-destructive">{{ $t('modals.delete.cannotUndo') }}</p>
         <ul class="list-disc pl-5 flex flex-col gap-2 text-foreground">
-          <li>
-            <strong>{{ projectTitle }}</strong> will be permanently deleted from Chance of Idea.
-          </li>
+          <li>{{ $t('modals.delete.line1', { title: projectTitle }) }}</li>
+          <li v-if="isPublished">{{ $t('modals.delete.line2') }}</li>
           <li v-if="isPublished">
-            It disappears from the catalog immediately, and anyone with the link stops being able to view it.
+            <template v-if="applicationCount === null">{{ $t('modals.delete.appsUnknown') }}</template>
+            <template v-else-if="applicationCount === 0">{{ $t('modals.delete.appsNone') }}</template>
+            <template v-else-if="applicationCount === 1">{{ $t('modals.delete.appsOne', { count: applicationCount }) }}</template>
+            <template v-else>{{ $t('modals.delete.appsMany', { count: applicationCount }) }}</template>
           </li>
-          <li v-if="isPublished">
-            <template v-if="applicationCount === null">
-              Every adoption application for this project will also be deleted. The number could not be checked.
-            </template>
-            <template v-else-if="applicationCount === 0">
-              No adoption applications exist for this project yet.
-            </template>
-            <template v-else>
-              <strong>{{ applicationCount }}</strong>
-              {{ applicationCount === 1 ? 'adoption application' : 'adoption applications' }}
-              will be deleted, and the applicants will lose them.
-            </template>
-          </li>
-          <li>
-            The GitHub repository <strong>{{ repoName }}</strong> is not affected. It stays on your GitHub account.
-          </li>
+          <li>{{ $t('modals.delete.repo', { repo: repoName }) }}</li>
         </ul>
       </div>
 
       <form novalidate class="mt-5 flex flex-col gap-4" @submit.prevent="handleConfirm">
         <div class="flex flex-col gap-1.5">
           <label for="delete-project-input" class="text-sm font-medium">
-            To confirm, type the repository name <span class="font-mono">{{ repoName }}</span> below
+            {{ $t('modals.delete.confirmLabel', { repo: repoName }) }}
           </label>
           <input
             id="delete-project-input"
@@ -80,7 +67,7 @@
             class="px-4 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:opacity-80"
             @click="emit('close')"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             type="submit"
@@ -88,7 +75,7 @@
             :aria-busy="isLoading"
             class="px-4 py-2 text-sm font-medium rounded-md bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isLoading ? 'Deleting...' : 'Delete project' }}
+            {{ isLoading ? $t('modals.delete.deleting') : $t('modals.delete.confirm') }}
           </button>
         </div>
       </form>

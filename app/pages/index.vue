@@ -16,12 +16,10 @@ const { user, ready } = useAuth()
 		>
 			<div class="flex flex-col gap-6">
 				<h1 class="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-					Give your unfinished side project a second life
+					{{ $t('home.title') }}
 				</h1>
 				<p class="text-lg text-muted-foreground leading-relaxed max-w-xl">
-					Second Chance Archive connects developers who want to pass on
-					abandoned or unfinished projects with adopters ready to continue the
-					work — preserving ideas and saving development time.
+					{{ $t('home.description') }}
 				</p>
 
 				<div class="flex flex-wrap items-center gap-4 mt-2">
@@ -31,7 +29,7 @@ const { user, ready } = useAuth()
 						size="lg"
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
 					>
-						<NuxtLink to="/me">Back to profile</NuxtLink>
+						<NuxtLink to="/me">{{ $t('home.backToProfile') }}</NuxtLink>
 					</Button>
 					<Button
 						v-else
@@ -39,7 +37,7 @@ const { user, ready } = useAuth()
 						size="lg"
 						class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
 					>
-						<NuxtLink to="/login">Log in</NuxtLink>
+						<NuxtLink to="/login">{{ $t('home.login') }}</NuxtLink>
 					</Button>
 					<Button
 						as-child
@@ -47,7 +45,7 @@ const { user, ready } = useAuth()
 						variant="outline"
 						class="border-input text-foreground hover:bg-accent hover:text-accent-foreground"
 					>
-						<NuxtLink to="/projects">Find a project</NuxtLink>
+						<NuxtLink to="/projects">{{ $t('home.findProject') }}</NuxtLink>
 					</Button>
 				</div>
 			</div>
@@ -67,22 +65,22 @@ const { user, ready } = useAuth()
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-8 py-4">
 		<LandingCard
 			:count="3842"
-			description="Total projects"
+			:description="$t('home.stats.total')"
 			:icon="Package"
 		/>
 		<LandingCard
 			:count="1255"
-			description="Adopted projects"
+			:description="$t('home.stats.adopted')"
 			:icon="HeartHandshake"
 		/>
 		<LandingCard
 			:count="4980"
-			description="Active developers"
+			:description="$t('home.stats.developers')"
 			:icon="Users"
 		/>
 		<LandingCard
 			:count="12430"
-			description="Hours saved"
+			:description="$t('home.stats.hours')"
 			:icon="Clock"
 		/>
 	</div>
@@ -92,10 +90,10 @@ const { user, ready } = useAuth()
 				<Info class="w-6 h-6 text-primary shrink-0 mt-1" />
 				<div class="flex flex-col gap-1">
 					<h3 class="text-lg font-semibold text-foreground">
-						Not sure where to start?
+						{{ $t('home.startTitle') }}
 					</h3>
 					<p class="text-muted-foreground">
-						Browse the catalog to see what others have published, then pick the one that fits.
+						{{ $t('home.startBody') }}
 					</p>
 				</div>
 			</CardContent>
@@ -105,9 +103,9 @@ const { user, ready } = useAuth()
 		<div class="flex-1">
 			<div class="flex justify-between">
 				<div>
-					<h2 class="text-lg font-semibold text-foreground">For authors</h2>
+					<h2 class="text-lg font-semibold text-foreground">{{ $t('home.authorsTitle') }}</h2>
 					<p class="text-muted-foreground">
-						Pass your project to someone who will finish it and get credit for the work you started.
+						{{ $t('home.authorsBody') }}
 					</p>
 				</div>
 				<div
@@ -121,10 +119,10 @@ const { user, ready } = useAuth()
 					<span class="text-xl font-bold font-mono text-primary">1</span>
 					<div>
 						<h3 class="font-semibold text-foreground">
-							Create a project listing
+							{{ $t('home.authors.step1Title') }}
 						</h3>
 						<p class="text-muted-foreground text-sm">
-							Add repo, notes, goals, and a clear adoption checklist.
+							{{ $t('home.authors.step1Body') }}
 						</p>
 					</div>
 				</li>
@@ -132,19 +130,19 @@ const { user, ready } = useAuth()
 					<span class="text-xl font-bold font-mono text-primary">2</span>
 					<div>
 						<h3 class="font-semibold text-foreground">
-							Set licensing & expectations
+							{{ $t('home.authors.step2Title') }}
 						</h3>
 						<p class="text-muted-foreground text-sm">
-							Choose a license and what support you can offer the adopter.
+							{{ $t('home.authors.step2Body') }}
 						</p>
 					</div>
 				</li>
 				<li class="flex gap-6">
 					<span class="text-xl font-bold font-mono text-primary">3</span>
 					<div>
-						<h3 class="font-semibold text-foreground">Approve adopters</h3>
+						<h3 class="font-semibold text-foreground">{{ $t('home.authors.step3Title') }}</h3>
 						<p class="text-muted-foreground text-sm">
-							Review candidates or let the community pick the best fit.
+							{{ $t('home.authors.step3Body') }}
 						</p>
 					</div>
 				</li>
@@ -153,10 +151,9 @@ const { user, ready } = useAuth()
 		<div class="flex-1">
 			<div class="flex justify-between">
 				<div>
-					<h2 class="text-lg font-semibold text-foreground">For adopters</h2>
+					<h2 class="text-lg font-semibold text-foreground">{{ $t('home.adoptersTitle') }}</h2>
 					<p class="text-muted-foreground">
-						Find an interesting codebase and continue the work with clear
-						handoff notes.
+						{{ $t('home.adoptersBody') }}
 					</p>
 				</div>
 				<div
@@ -169,27 +166,27 @@ const { user, ready } = useAuth()
 				<li class="flex gap-6">
 					<span class="text-xl font-bold font-mono text-primary">1</span>
 					<div>
-						<h3 class="font-semibold text-foreground">Browse and filter</h3>
+						<h3 class="font-semibold text-foreground">{{ $t('home.adopters.step1Title') }}</h3>
 						<p class="text-muted-foreground text-sm">
-							Search by tech stack, completeness, or project size.
+							{{ $t('home.adopters.step1Body') }}
 						</p>
 					</div>
 				</li>
 				<li class="flex gap-6">
 					<span class="text-xl font-bold font-mono text-primary">2</span>
 					<div>
-						<h3 class="font-semibold text-foreground">Request adoption</h3>
+						<h3 class="font-semibold text-foreground">{{ $t('home.adopters.step2Title') }}</h3>
 						<p class="text-muted-foreground text-sm">
-							Send a message and propose a plan to continue the project.
+							{{ $t('home.adopters.step2Body') }}
 						</p>
 					</div>
 				</li>
 				<li class="flex gap-6">
 					<span class="text-xl font-bold font-mono text-primary">3</span>
 					<div>
-						<h3 class="font-semibold text-foreground">Complete & credit</h3>
+						<h3 class="font-semibold text-foreground">{{ $t('home.adopters.step3Title') }}</h3>
 						<p class="text-muted-foreground text-sm">
-							Finish features, update docs, and credit the original author.
+							{{ $t('home.adopters.step3Body') }}
 						</p>
 					</div>
 				</li>

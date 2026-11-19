@@ -28,7 +28,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => cancelAnimationFrame(frame))
 
-const formatted = computed(() => displayed.value.toLocaleString('en-US'))
+const { locale } = useI18n()
+const formatted = computed(() =>
+	displayed.value.toLocaleString(locale.value === 'uk' ? 'uk-UA' : 'en-US'),
+)
 </script>
 
 <template>
