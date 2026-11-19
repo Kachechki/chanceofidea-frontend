@@ -11,6 +11,13 @@ export default defineNuxtConfig({
 	shadcn: {
 		componentDir: 'app/widgets/ui',
 	},
+	i18n: {
+		locales: [
+			{ code: 'en', language: 'en-US' },
+			{ code: 'uk', language: 'uk-UA' },
+		],
+		defaultLocale: 'en',
+	},
 	runtimeConfig: {
 		backendUrl: process.env.NUXT_BACKEND_URL || 'http://localhost:4000',
 		public: {
